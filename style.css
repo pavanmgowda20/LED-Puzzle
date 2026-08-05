@@ -15,6 +15,8 @@
   --glass-glow: rgba(0, 242, 254, 0.15);
   --tile-size: 80px;
   --board-gap: 8px;
+  /* Mathematically matches the exact height of the 4x4 board: 4 tiles + 3 gaps + 36px offset */
+  --board-height: calc(4 * var(--tile-size) + 3 * var(--board-gap) + 36px);
 }
 
 * {
@@ -367,6 +369,7 @@ body {
   border-radius: 12px;
   position: relative;
   overflow: visible;
+  height: var(--board-height); /* Lock height to match grid height on all device screens */
 }
 
 .battery-container, .bulb-container {
@@ -455,16 +458,16 @@ body {
   display: flex;
   align-items: center;
   z-index: 5;
+  transform: translateY(-50%); /* Align node vertical center exactly with computed top coordinate */
 }
 
 /* Grid bounds mapping for terminals:
-   Board height: ~350px.
-   Grid rows 0, 1, 2, 3 correspond to centers of the tiles.
+   Calculate top coordinates to match grid row centers exactly (18px padding offset + row tiles)
 */
-.terminal-pos { right: -25px; top: 12.5%; }       /* row 0 center */
-.terminal-neg { right: -25px; top: 87.5%; }       /* row 3 center */
-.terminal-bulb-in { left: -25px; top: 37.5%; }    /* row 1 center */
-.terminal-bulb-out { left: -25px; top: 62.5%; }   /* row 2 center */
+.terminal-pos { right: -25px; top: calc(18px + var(--tile-size) / 2); }
+.terminal-bulb-in { left: -25px; top: calc(18px + 1.5 * var(--tile-size) + var(--board-gap)); }
+.terminal-bulb-out { left: -25px; top: calc(18px + 2.5 * var(--tile-size) + 2 * var(--board-gap)); }
+.terminal-neg { right: -25px; top: calc(18px + 3.5 * var(--tile-size) + 3 * var(--board-gap)); }
 
 .terminal-node {
   width: 14px;
