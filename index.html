@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoltLoop // LED Circuit Connection Puzzle</title>
+  <!-- Google Fonts for futuristic cyberpunk styling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Cyberpunk Background Grid Overlay -->
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <!-- Start/Welcome Screen -->
+  <div id="start-screen" class="modal-overlay active">
+    <div class="modal-content glass start-panel">
+      <div class="brand-header">
+        <div class="brand-logo">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <defs>
+              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f2fe" />
+                <stop offset="100%" stop-color="#4facfe" />
+              </linearGradient>
+              <filter id="logoGlow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <circle cx="50" cy="50" r="40" stroke="url(#logoGrad)" stroke-width="4" fill="none" opacity="0.3" />
+            <path d="M 50 15 A 35 35 0 0 1 85 50 L 70 50 A 20 20 0 0 0 50 30 Z" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+            <path d="M 50 85 A 35 35 0 0 1 15 50 L 30 50 A 20 20 0 0 0 50 70 Z" fill="url(#logoGrad)" filter="url(#logoGlow)" />
+            <polygon points="50,35 65,52 53,52 50,65 35,48 47,48" fill="#fff" filter="url(#logoGlow)" />
+          </svg>
+        </div>
+        <h1 class="brand-title">VOLTLOOP</h1>
+        <p class="brand-subtitle">ELECTRICAL CONNECTION PUZZLE</p>
+      </div>
+
+      <div class="start-actions">
+        <button id="btn-play-game" class="btn btn-primary btn-lg">INITIALIZE POWER</button>
+        <button id="btn-how-to" class="btn btn-secondary">INSTRUCTIONS</button>
+      </div>
+      
+      <div class="developer-tag">Designed by Antigravity</div>
+    </div>
+  </div>
+
+  <!-- Main Game Container -->
+  <div class="game-container hidden">
+    <!-- Header / HUD -->
+    <header class="hud-header glass">
+      <div class="hud-left">
+        <div class="logo-text" id="logo-back">VOLT<span>LOOP</span></div>
+        <div class="hud-stat">
+          <span class="label">LEVEL</span>
+          <span class="value" id="current-level-display">01</span>
+        </div>
+      </div>
+      
+      <div class="hud-center">
+        <div class="hud-stat">
+          <span class="label">MOVES</span>
+          <span class="value" id="moves-count">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="label">TIME</span>
+          <span class="value" id="timer-display">00:00</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <button id="btn-mute" class="hud-btn" title="Toggle Sound">
+          <svg class="icon-mute" viewBox="0 0 24 24" width="22" height="22">
+            <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+          </svg>
+          <svg class="icon-unmute hidden" viewBox="0 0 24 24" width="22" height="22">
+            <path fill="currentColor" d="M3.27,1.44L2,2.72L5.28,6H3V12H7L12,17V12.72L16.28,17C15.62,17.5 14.85,17.86 14,18.06V20.12C15.4,19.9 16.69,19.23 17.74,18.46L20.28,21L21.56,19.72L3.27,1.44M12,4L9.91,6.09L12,8.18V4M14,3.23V5.29C14.93,5.57 15.79,6.03 16.5,6.67L15,8.17C14.71,7.96 14.37,7.8 14,7.71V9.71L19,14.71C19,13.82 19,12.91 19,12C19,7.72 16,4.14 14,3.23M16.5,12C16.5,12.28 16.46,12.55 16.39,12.81L14,10.42V7.97C15.5,8.71 16.5,10.23 16.5,12Z"/>
+          </svg>
+        </button>
+        <button id="btn-reset" class="hud-btn" title="Reset Level">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
+          </svg>
+        </button>
+        <button id="btn-levels" class="hud-btn" title="Select Level">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M4,6H20V8H4V6M4,11H20V13H4V11M4,16H20V18H4V16Z"/>
+          </svg>
+        </button>
+        <button id="btn-help" class="hud-btn" title="Tutorial">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M11,18H13V16H11V18M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,6A4,4 0 0,0 8,10H10A2,2 0 0,1 12,8A2,2 0 0,1 14,10C14,12 11,11.75 11,15H13C13,12.75 16,12.5 16,10A4,4 0 0,0 12,6Z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Play Zone: Battery [Left] | Grid [Middle] | Bulb [Right] -->
+    <main class="play-zone">
+      <!-- Battery Panel (Left) -->
+      <section class="battery-panel glass">
+        <div class="battery-container">
+          <div class="battery-casing">
+            <div class="battery-cap"></div>
+            <div class="battery-body">
+              <div class="battery-charge-level">
+                <div class="bar bar-1"></div>
+                <div class="bar bar-2"></div>
+                <div class="bar bar-3"></div>
+                <div class="bar bar-4"></div>
+              </div>
+              <div class="battery-core-indicator">
+                <span id="battery-status-text">STANDBY</span>
+              </div>
+            </div>
+          </div>
+          <!-- Terminal Wires connecting to the grid -->
+          <div class="terminal terminal-pos" data-row="0" title="Positive Terminal (+)">
+            <div class="terminal-node"></div>
+            <div class="terminal-wire">
+              <svg viewBox="0 0 60 20" class="wire-svg">
+                <path d="M 0 10 L 60 10" class="bg-line" />
+                <path d="M 0 10 L 60 10" class="flow-line" id="pos-flow" />
+              </svg>
+            </div>
+            <span class="terminal-sign">+</span>
+          </div>
+
+          <div class="terminal terminal-neg" data-row="3" title="Negative Terminal (-)">
+            <div class="terminal-node"></div>
+            <div class="terminal-wire">
+              <svg viewBox="0 0 60 20" class="wire-svg">
+                <path d="M 0 10 L 60 10" class="bg-line" />
+                <path d="M 0 10 L 60 10" class="flow-line" id="neg-flow" />
+              </svg>
+            </div>
+            <span class="terminal-sign">-</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4x4 Grid Board (Center) -->
+      <section class="board-wrapper">
+        <div class="board-neon-outline">
+          <div id="puzzle-board" class="puzzle-board">
+            <!-- Dynamically populated in game.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Bulb Panel (Right) -->
+      <section class="bulb-panel glass">
+        <div class="bulb-container">
+          <div class="bulb-socket-glow" id="bulb-ambient"></div>
+          <div class="bulb-fixture">
+            <svg viewBox="0 0 100 160" width="80" class="bulb-svg" id="bulb-object">
+              <defs>
+                <radialGradient id="litGlow" cx="50%" cy="40%" r="50%">
+                  <stop offset="0%" stop-color="#fffbbf" stop-opacity="1" />
+                  <stop offset="30%" stop-color="#ffb700" stop-opacity="0.8" />
+                  <stop offset="70%" stop-color="#ff5500" stop-opacity="0.3" />
+                  <stop offset="100%" stop-color="#ff5500" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <!-- Bulb Base/Socket -->
+              <path d="M 35 120 L 65 120 L 60 145 L 40 145 Z" fill="#2d2d3a" stroke="#4a4a5e" stroke-width="2" />
+              <rect x="38" y="145" width="24" height="6" fill="#1b1b22" rx="2" />
+              <path d="M 45 120 L 55 120 L 55 110 L 45 110 Z" fill="#555" />
+              
+              <!-- Bulb Filament (Glowing and dark state) -->
+              <path d="M 42 110 L 42 80 L 47 70 L 53 70 L 58 80 L 58 110" fill="none" stroke="#666" stroke-width="2" id="filament-bg" />
+              <path d="M 42 110 L 42 80 L 47 70 L 53 70 L 58 80 L 58 110" fill="none" stroke="#ffcc00" stroke-width="2" class="filament-glow" id="filament-fg" opacity="0" />
+
+              <!-- Filament loop center coil -->
+              <path d="M 47 70 C 47 65, 53 65, 53 70" fill="none" stroke="#666" stroke-width="2" id="filament-coil-bg" />
+              <path d="M 47 70 C 47 65, 53 65, 53 70" fill="none" stroke="#ffcc00" stroke-width="2" class="filament-glow" id="filament-coil-fg" opacity="0" />
+
+              <!-- Bulb Glass Dome -->
+              <path d="M 25 80 C 25 40, 75 40, 75 80 C 75 100, 62 110, 62 120 L 38 120 C 38 110, 25 100, 25 80 Z" fill="none" stroke="#4a4a5e" stroke-width="2" />
+              <!-- Glow layer (visible when connected) -->
+              <path d="M 25 80 C 25 40, 75 40, 75 80 C 75 100, 62 110, 62 120 L 38 120 C 38 110, 25 100, 25 80 Z" fill="url(#litGlow)" id="bulb-glow-overlay" opacity="0" />
+            </svg>
+          </div>
+
+          <!-- Bulb connecting terminals to the grid -->
+          <div class="terminal terminal-bulb-in" data-row="1" title="Bulb Inlet">
+            <div class="terminal-node"></div>
+            <div class="terminal-wire">
+              <svg viewBox="0 0 60 20" class="wire-svg">
+                <path d="M 0 10 L 60 10" class="bg-line" />
+                <path d="M 0 10 L 60 10" class="flow-line" id="bulb-in-flow" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="terminal terminal-bulb-out" data-row="2" title="Bulb Outlet">
+            <div class="terminal-node"></div>
+            <div class="terminal-wire">
+              <svg viewBox="0 0 60 20" class="wire-svg">
+                <path d="M 0 10 L 60 10" class="bg-line" />
+                <path d="M 0 10 L 60 10" class="flow-line" id="bulb-out-flow" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Level Selection Drawer / Overlay -->
+  <div id="levels-modal" class="modal-overlay">
+    <div class="modal-content glass panel-medium">
+      <div class="modal-header">
+        <h2>LEVEL SELECT</h2>
+        <button id="btn-close-levels" class="close-btn">&times;</button>
+      </div>
+      <div class="level-grid" id="level-selection-grid">
+        <!-- Dynamically generated buttons 1 to 10 in game.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <div id="help-modal" class="modal-overlay">
+    <div class="modal-content glass panel-large">
+      <div class="modal-header">
+        <h2>TRANSMISSION: INSTRUCTIONS</h2>
+        <button id="btn-close-help" class="close-btn">&times;</button>
+      </div>
+      <div class="tutorial-body">
+        <section class="tutorial-section">
+          <h3>THE MISSION</h3>
+          <p>Establish a closed electrical circuit by rotating the power wire tiles on the 4x4 matrix. Power must flow continuously from the positive battery terminal (+), through the light bulb, and back to the negative battery terminal (-).</p>
+        </section>
+
+        <section class="tutorial-section">
+          <h3>THE CONTROLS</h3>
+          <ul class="tut-list">
+            <li><strong>Rotate Tile</strong>: Click or tap any tile to rotate it 90° clockwise.</li>
+            <li><strong>Locked Tiles</strong>: Some levels contain locked tiles (indicated by metal corners and an orange lock). These cannot be rotated and must be worked around!</li>
+            <li><strong>Sound toggle</strong>: Use the speaker icon in the top right to enable/disable synth soundtrack and clicks.</li>
+          </ul>
+        </section>
+
+        <section class="tutorial-section">
+          <h3>TILE CLASSIFICATIONS</h3>
+          <div class="tile-types">
+            <div class="tile-type-item">
+              <div class="tut-tile-preview" id="preview-straight"></div>
+              <span><strong>Straight</strong>: Connects opposite sides.</span>
+            </div>
+            <div class="tile-type-item">
+              <div class="tut-tile-preview" id="preview-corner"></div>
+              <span><strong>Corner</strong>: Diverts power 90 degrees.</span>
+            </div>
+            <div class="tile-type-item">
+              <div class="tut-tile-preview" id="preview-tee"></div>
+              <span><strong>Tee Junction</strong>: Splits power into 3 paths.</span>
+            </div>
+            <div class="tile-type-item">
+              <div class="tut-tile-preview" id="preview-cross"></div>
+              <span><strong>Cross Junction</strong>: Distributes power in all 4 directions.</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <button id="btn-dismiss-help" class="btn btn-secondary btn-full">CLOSE TRANSMISSION</button>
+    </div>
+  </div>
+
+  <!-- Win Overlay / Success Screen -->
+  <div id="victory-modal" class="modal-overlay">
+    <div class="modal-content glass victory-panel text-center">
+      <div class="win-spark-header">
+        <svg viewBox="0 0 100 100" width="90" height="90" class="pulse-icon">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#39ff14" stroke-width="2" class="ripple-circle" />
+          <path d="M50,15 L60,35 L80,35 L65,50 L72,70 L50,60 L28,70 L35,50 L20,35 L40,35 Z" fill="#39ff14" />
+        </svg>
+        <h2 class="victory-title">CIRCUIT ESTABLISHED</h2>
+        <p class="victory-subtitle">Power Loop Closed Successfully!</p>
+      </div>
+
+      <div class="victory-stats">
+        <div class="victory-stat-item">
+          <span class="victory-stat-label">TIME ELAPSED</span>
+          <span class="victory-stat-val" id="victory-time">00:12</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="victory-stat-label">MOVES MADE</span>
+          <span class="victory-stat-val" id="victory-moves">14</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="victory-stat-label">PERFORMANCE RATING</span>
+          <div class="stars-container" id="victory-stars">
+            <!-- SVG stars populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="victory-actions">
+        <button id="btn-next-level" class="btn btn-success btn-lg">PROCEED TO NEXT TEST</button>
+        <button id="btn-replay" class="btn btn-secondary">REPLAY STAGE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script inclusion -->
+  <script src="audio.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

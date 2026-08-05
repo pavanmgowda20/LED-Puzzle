@@ -1,0 +1,14 @@
+{
+  "name": "voltloop",
+  "version": "1.0.0",
+  "description": "VoltLoop: The LED Circuit Connection Puzzle",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite --port 3000 --open",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
