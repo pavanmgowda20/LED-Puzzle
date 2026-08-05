@@ -669,36 +669,36 @@ class GameEngine {
       }
     }
 
-    // Connect internal bulb filament
-    graph[-3].push(-4);
-    graph[-4].push(-3);
-
-    // 2. Solve paths
-    // Find all simple paths from Battery (+) to Battery (-)
-    const allPaths = this.findPaths(graph, -1, -2);
+    // 2. Solve paths using the linear-time path nodes solver (no exponential DFS recursion)
+    // Solve short circuits first (path from Positive to Negative without the bulb)
+    const shortCircuitNodes = this.findPathNodes(graph, -1, -2);
+    const isShortCircuited = shortCircuitNodes.size > 0;
     
-    // Check for short circuits (paths that DO NOT pass through the bulb filament -3 <-> -4)
-    const shortPaths = allPaths.filter(path => !path.includes(-3) || !path.includes(-4));
+    // Solve bulb connection (path from Positive to Inlet, and Outlet to Negative)
+    const bulbInNodes = this.findPathNodes(graph, -1, -3);
+    const bulbOutNodes = this.findPathNodes(graph, -4, -2);
     
-    // Check for bulb lighting paths (paths that DO pass through both bulb nodes -3 and -4)
-    const bulbPaths = allPaths.filter(path => path.includes(-3) && path.includes(-4));
-
+    // Alternately, check if current flows backward (S to BULB_OUT and BULB_IN to T)
+    const bulbInNodesRev = this.findPathNodes(graph, -1, -4);
+    const bulbOutNodesRev = this.findPathNodes(graph, -3, -2);
+    
+    let isBulbLit = false;
     const energizedTiles = new Set();
     const shortTiles = new Set();
-
-    // 3. Mark energized tiles in victory paths
-    bulbPaths.forEach(path => {
-      path.forEach(node => {
-        if (node >= 0) energizedTiles.add(node);
-      });
-    });
-
-    // Mark short circuit tiles (only if they are part of active short circuit loops)
-    shortPaths.forEach(path => {
-      path.forEach(node => {
-        if (node >= 0) shortTiles.add(node);
-      });
-    });
+    
+    if (bulbInNodes.size > 0 && bulbOutNodes.size > 0) {
+      isBulbLit = true;
+      bulbInNodes.forEach(node => { if (node >= 0) energizedTiles.add(node); });
+      bulbOutNodes.forEach(node => { if (node >= 0) energizedTiles.add(node); });
+    } else if (bulbInNodesRev.size > 0 && bulbOutNodesRev.size > 0) {
+      isBulbLit = true;
+      bulbInNodesRev.forEach(node => { if (node >= 0) energizedTiles.add(node); });
+      bulbOutNodesRev.forEach(node => { if (node >= 0) energizedTiles.add(node); });
+    }
+    
+    if (isShortCircuited) {
+      shortCircuitNodes.forEach(node => { if (node >= 0) shortTiles.add(node); });
+    }
 
     // 4. Calculate static charge flow (partial paths for helpful visual feedback)
     // Find everything connected to Battery (+) without crossing the bulb filament
@@ -728,12 +728,6 @@ class GameEngine {
     this.updateTerminals(posReachable, negReachable, energizedTiles, shortTiles);
 
     // 7. Check Victory condition
-    // A victory requires:
-    // - There is at least one bulb path.
-    // - NO active short circuits are stealing current! (Strict gameplay rule: a parallel short circuit starves the bulb)
-    const isBulbLit = bulbPaths.length > 0;
-    const isShortCircuited = shortPaths.length > 0;
-
     const batteryStatusText = document.getElementById('battery-status-text');
     const batteryPanel = document.querySelector('.battery-panel');
     const bulbPanel = document.querySelector('.bulb-panel');
@@ -805,31 +799,80 @@ class GameEngine {
     }
   }
 
-  // Graph DFS to find all simple paths
-  findPaths(graph, startNode, endNode) {
-    const paths = [];
-    const visited = new Set();
-    
-    const dfs = (node, currentPath) => {
-      if (node === endNode) {
-        paths.push([...currentPath]);
-        return;
-      }
-      
-      visited.add(node);
-      const neighbors = graph[node] || [];
-      for (const neighbor of neighbors) {
-        if (!visited.has(neighbor)) {
-          currentPath.push(neighbor);
-          dfs(neighbor, currentPath);
-          currentPath.pop();
+  // Linear-time path-node solver using BFS reachability and leaf pruning
+  findPathNodes(graph, source, target) {
+    const reachableFromSource = new Set();
+    const qSource = [source];
+    const visitedSource = new Set([source]);
+    while (qSource.length > 0) {
+      const u = qSource.shift();
+      reachableFromSource.add(u);
+      for (const v of graph[u] || []) {
+        if (!visitedSource.has(v)) {
+          visitedSource.add(v);
+          qSource.push(v);
         }
       }
-      visited.delete(node);
-    };
+    }
 
-    dfs(startNode, [startNode]);
-    return paths;
+    if (!reachableFromSource.has(target)) {
+      return new Set();
+    }
+
+    const reachableFromTarget = new Set();
+    const qTarget = [target];
+    const visitedTarget = new Set([target]);
+    while (qTarget.length > 0) {
+      const u = qTarget.shift();
+      reachableFromTarget.add(u);
+      for (const v of graph[u] || []) {
+        if (!visitedTarget.has(v)) {
+          visitedTarget.add(v);
+          qTarget.push(v);
+        }
+      }
+    }
+
+    const pathNodes = new Set();
+    for (const node of reachableFromSource) {
+      if (reachableFromTarget.has(node)) {
+        pathNodes.add(node);
+      }
+    }
+
+    const subGraph = {};
+    for (const u of pathNodes) {
+      subGraph[u] = new Set();
+      for (const v of graph[u] || []) {
+        if (pathNodes.has(v)) {
+          subGraph[u].add(v);
+        }
+      }
+    }
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      const toRemove = [];
+      for (const u of pathNodes) {
+        if (u === source || u === target) continue;
+        if (subGraph[u].size < 2) {
+          toRemove.push(u);
+        }
+      }
+      if (toRemove.length > 0) {
+        changed = true;
+        for (const u of toRemove) {
+          pathNodes.delete(u);
+          for (const v of subGraph[u]) {
+            subGraph[v].delete(u);
+          }
+          delete subGraph[u];
+        }
+      }
+    }
+
+    return pathNodes;
   }
 
   // BFS to find all reachable nodes from a source, skipping blocked nodes
