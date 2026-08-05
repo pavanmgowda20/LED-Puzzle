@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VoltLoop // LED Circuit Connection Puzzle</title>
+  <!-- Inline SVG Favicon to avoid 404 warnings -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%2300f2fe%22/><polygon points=%2250,25 65,48 53,48 50,75 35,52 47,52%22 fill=%22%2308070f%22/></svg>">
   <!-- Google Fonts for futuristic cyberpunk styling -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,8 +51,6 @@
         <button id="btn-play-game" class="btn btn-primary btn-lg">INITIALIZE POWER</button>
         <button id="btn-how-to" class="btn btn-secondary">INSTRUCTIONS</button>
       </div>
-      
-      <div class="developer-tag">Designed by Antigravity</div>
     </div>
   </div>
 
@@ -314,7 +314,7 @@
   </div>
 
   <!-- Script inclusion -->
-  <script src="audio.js"></script>
-  <script src="game.js"></script>
+  <script type="module" src="/audio.js"></script>
+  <script type="module" src="/game.js"></script>
 </body>
 </html>
