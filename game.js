@@ -47,54 +47,54 @@ const LEVELS = [
   },
   {
     id: 2,
-    name: "The Snake Winding",
-    movesLimit: 12,
+    name: "Short Circuit Guide",
+    movesLimit: 6,
     tiles: [
-      { type: 'corner', rot: 1, locked: false },   // (0,0) Solved: rot=2 (B-L)
-      { type: 'corner', rot: 0, locked: false },   // (0,1) Solved: rot=3 (L-T)
-      { type: 'corner', rot: 3, locked: false },   // (0,2) Solved: rot=2 (B-L)
-      { type: 'corner', rot: 1, locked: false },   // (0,3) Solved: rot=2 (B-L)
+      { type: 'straight', rot: 1, locked: false }, // (0,0) Solved: rot=0 (H)
+      { type: 'straight', rot: 1, locked: false }, // (0,1) Solved: rot=0 (H)
+      { type: 'corner', rot: 0, locked: false },   // (0,2) Solved: rot=2 (B-L)
+      { type: 'empty', rot: 0, locked: false },
       
-      { type: 'corner', rot: 2, locked: false },   // (1,0) Solved: rot=0 (T-R)
-      { type: 'corner', rot: 1, locked: false },   // (1,1) Solved: rot=1 (R-B)
-      { type: 'corner', rot: 3, locked: false },   // (1,2) Solved: rot=0 (T-R)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'corner', rot: 2, locked: false },   // (1,2) Solved: rot=0 (T-R)
       { type: 'straight', rot: 1, locked: false }, // (1,3) Solved: rot=0 (H)
       
-      { type: 'straight', rot: 1, locked: false }, // (2,0) Solved: rot=1 (V)
-      { type: 'corner', rot: 0, locked: false },   // (2,1) Solved: rot=1 (R-B)
-      { type: 'corner', rot: 2, locked: false },   // (2,2) Solved: rot=3 (L-T)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'corner', rot: 0, locked: false },   // (2,2) Solved: rot=1 (R-B)
       { type: 'straight', rot: 1, locked: false }, // (2,3) Solved: rot=0 (H)
       
-      { type: 'corner', rot: 0, locked: false },   // (3,0) Solved: rot=3 (L-T)
-      { type: 'corner', rot: 2, locked: false },   // (3,1) Solved: rot=3 (L-T)
-      { type: 'corner', rot: 1, locked: false },   // (3,2) Solved: rot=2 (B-L)
-      { type: 'corner', rot: 0, locked: false }    // (3,3) Solved: rot=3 (L-T)
+      { type: 'straight', rot: 1, locked: false }, // (3,0) Solved: rot=0 (H)
+      { type: 'straight', rot: 1, locked: false }, // (3,1) Solved: rot=0 (H)
+      { type: 'corner', rot: 1, locked: false },   // (3,2) Solved: rot=3 (L-T)
+      { type: 'empty', rot: 0, locked: false }
     ]
   },
   {
     id: 3,
-    name: "Junction Splits",
-    movesLimit: 14,
+    name: "Winding Circuit",
+    movesLimit: 10,
     tiles: [
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
-      { type: 'tee', rot: 0, locked: false },      // Solved: rot=2 (L-B-R)
-      { type: 'corner', rot: 3, locked: false },   // Solved: rot=2 (B-L)
+      { type: 'corner', rot: 0, locked: false },   // (0,0) Solved: rot=2 (B-L)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'empty', rot: 0, locked: false },
       { type: 'empty', rot: 0, locked: false },
       
-      { type: 'empty', rot: 0, locked: false },
-      { type: 'corner', rot: 2, locked: false },   // Solved: rot=0 (T-R)
-      { type: 'tee', rot: 3, locked: false },      // Solved: rot=2 (R-B-L)
-      { type: 'corner', rot: 1, locked: false },   // Solved: rot=0 (T-R)
+      { type: 'corner', rot: 2, locked: false },   // (1,0) Solved: rot=0 (T-R)
+      { type: 'corner', rot: 0, locked: false },   // (1,1) Solved: rot=2 (B-L)
+      { type: 'corner', rot: 3, locked: false },   // (1,2) Solved: rot=1 (R-B)
+      { type: 'straight', rot: 1, locked: false }, // (1,3) Solved: rot=0 (H)
       
       { type: 'empty', rot: 0, locked: false },
-      { type: 'empty', rot: 0, locked: false },
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=1 (V)
-      { type: 'corner', rot: 3, locked: false },   // Solved: rot=1 (R-B)
+      { type: 'corner', rot: 3, locked: false },   // (2,1) Solved: rot=0 (T-R)
+      { type: 'corner', rot: 1, locked: false },   // (2,2) Solved: rot=3 (L-T)
+      { type: 'corner', rot: 3, locked: false },   // (2,3) Solved: rot=1 (R-B)
       
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
-      { type: 'tee', rot: 2, locked: false },      // Solved: rot=0 (L-T-R)
-      { type: 'corner', rot: 0, locked: false },   // Solved: rot=3 (L-T)
-      { type: 'corner', rot: 2, locked: false }    // Solved: rot=3 (L-T)
+      { type: 'straight', rot: 1, locked: false }, // (3,0) Solved: rot=0 (H)
+      { type: 'straight', rot: 1, locked: false }, // (3,1) Solved: rot=0 (H)
+      { type: 'straight', rot: 1, locked: false }, // (3,2) Solved: rot=0 (H)
+      { type: 'corner', rot: 0, locked: false }    // (3,3) Solved: rot=3 (L-T)
     ]
   },
   {
@@ -751,7 +751,7 @@ class GameEngine {
       if (!this.isLevelComplete) {
         this.isLevelComplete = true;
         this.stopTimer();
-        setTimeout(() => this.triggerVictory(), 800);
+        setTimeout(() => this.triggerVictory(), 2500);
       }
     } else {
       window.gameAudio.stopHum();
