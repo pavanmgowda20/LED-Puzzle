@@ -100,53 +100,53 @@ const LEVELS = [
   {
     id: 4,
     name: "Static Core",
-    movesLimit: 10,
+    movesLimit: 16,
     tiles: [
-      { type: 'corner', rot: 0, locked: false },   // Solved: rot=2 (B-L)
-      { type: 'corner', rot: 1, locked: true },    // LOCKED Solved: rot=1 (R-B)
-      { type: 'corner', rot: 3, locked: false },   // Solved: rot=2 (B-L)
+      { type: 'corner', rot: 2, locked: false },   // (0,0) Solved: rot=2 (B-L)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'empty', rot: 0, locked: false },
       { type: 'empty', rot: 0, locked: false },
       
-      { type: 'straight', rot: 0, locked: false }, // Solved: rot=1 (V)
-      { type: 'corner', rot: 0, locked: true },    // LOCKED Solved: rot=0 (T-R)
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
+      { type: 'corner', rot: 0, locked: false },   // (1,0) Solved: rot=0 (T-R)
+      { type: 'corner', rot: 2, locked: true },    // (1,1) LOCKED Solved: rot=2 (B-L)
+      { type: 'corner', rot: 1, locked: false },   // (1,2) Solved: rot=1 (R-B)
+      { type: 'straight', rot: 0, locked: false }, // (1,3) Solved: rot=0 (H)
       
-      { type: 'corner', rot: 1, locked: false },   // Solved: rot=0 (T-R)
-      { type: 'straight', rot: 0, locked: true },    // LOCKED Solved: rot=0 (H)
-      { type: 'corner', rot: 2, locked: false },   // Solved: rot=3 (L-T)
-      { type: 'corner', rot: 0, locked: false },   // Solved: rot=1 (R-B)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'corner', rot: 0, locked: false },   // (2,1) Solved: rot=0 (T-R)
+      { type: 'corner', rot: 3, locked: false },   // (2,2) Solved: rot=3 (L-T)
+      { type: 'corner', rot: 1, locked: false },   // (2,3) Solved: rot=1 (R-B)
       
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=1 (V)
-      { type: 'corner', rot: 1, locked: false },   // Solved: rot=3 (L-T)
-      { type: 'straight', rot: 0, locked: false }, // Solved: rot=1 (V)
-      { type: 'corner', rot: 2, locked: false }    // Solved: rot=3 (L-T)
+      { type: 'straight', rot: 0, locked: false }, // (3,0) Solved: rot=0 (H)
+      { type: 'straight', rot: 0, locked: true },  // (3,1) LOCKED Solved: rot=0 (H)
+      { type: 'straight', rot: 0, locked: false }, // (3,2) Solved: rot=0 (H)
+      { type: 'corner', rot: 3, locked: false }    // (3,3) Solved: rot=3 (L-T)
     ]
   },
   {
     id: 5,
     name: "Grid Crossroads",
-    movesLimit: 15,
+    movesLimit: 18,
     tiles: [
-      { type: 'corner', rot: 1, locked: false },   // (0,0) Solved: rot=2 (B-L)
-      { type: 'tee', rot: 3, locked: false },      // (0,1) Solved: rot=2 (L-B-R)
-      { type: 'corner', rot: 0, locked: false },   // (0,2) Solved: rot=2 (B-L)
+      { type: 'corner', rot: 2, locked: false },   // (0,0) Solved: rot=2 (B-L)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'empty', rot: 0, locked: false },
       { type: 'empty', rot: 0, locked: false },
       
-      { type: 'straight', rot: 0, locked: false }, // (1,0) Solved: rot=1 (V)
-      { type: 'cross', rot: 0, locked: false },    // (1,1) Solved: rot=0
-      { type: 'straight', rot: 0, locked: false }, // (1,2) Solved: rot=1 (V)
-      { type: 'corner', rot: 2, locked: false },   // (1,3) Solved: rot=0 (T-R)
+      { type: 'corner', rot: 0, locked: false },   // (1,0) Solved: rot=0 (T-R)
+      { type: 'cross', rot: 0, locked: true },     // (1,1) LOCKED Cross (L path)
+      { type: 'corner', rot: 1, locked: false },   // (1,2) Solved: rot=1 (R-B)
+      { type: 'straight', rot: 0, locked: false }, // (1,3) Solved: rot=0 (H)
       
-      { type: 'straight', rot: 0, locked: false }, // (2,0) Solved: rot=1 (V)
-      { type: 'straight', rot: 1, locked: false }, // (2,1) Solved: rot=1 (V)
-      { type: 'cross', rot: 0, locked: true },     // (2,2) LOCKED Cross
-      { type: 'corner', rot: 3, locked: false },   // (2,3) Solved: rot=1 (R-B)
+      { type: 'empty', rot: 0, locked: false },
+      { type: 'corner', rot: 0, locked: false },   // (2,1) Solved: rot=0 (T-R)
+      { type: 'tee', rot: 0, locked: false },      // (2,2) Solved: rot=0 (L-T-R)
+      { type: 'corner', rot: 1, locked: false },   // (2,3) Solved: rot=1 (R-B)
       
-      { type: 'corner', rot: 0, locked: false },   // (3,0) Solved: rot=3 (L-T)
-      { type: 'tee', rot: 1, locked: false },      // (3,1) Solved: rot=0 (L-T-R)
-      { type: 'corner', rot: 2, locked: false },   // (3,2) Solved: rot=3 (L-T)
-      { type: 'corner', rot: 1, locked: false }    // (3,3) Solved: rot=3 (L-T)
+      { type: 'straight', rot: 0, locked: false }, // (3,0) Solved: rot=0 (H)
+      { type: 'straight', rot: 0, locked: false }, // (3,1) Solved: rot=0 (H)
+      { type: 'straight', rot: 0, locked: false }, // (3,2) Solved: rot=0 (H)
+      { type: 'corner', rot: 3, locked: false }    // (3,3) Solved: rot=3 (L-T)
     ]
   },
   {
@@ -154,25 +154,25 @@ const LEVELS = [
     name: "Short Circuit Danger",
     movesLimit: 14,
     tiles: [
-      { type: 'tee', rot: 1, locked: false },      // Solved: rot=2 (L-B-R)
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
-      { type: 'corner', rot: 3, locked: false },   // Solved: rot=2 (B-L)
+      { type: 'tee', rot: 2, locked: false },      // (0,0) Solved: rot=2 (R-B-L)
+      { type: 'straight', rot: 0, locked: false }, // (0,1) Solved: rot=0 (H)
+      { type: 'corner', rot: 0, locked: false },   // (0,2) Solved: rot=0 (T-R)
       { type: 'empty', rot: 0, locked: false },
       
-      { type: 'straight', rot: 0, locked: false }, // Solved: rot=1 (V)
-      { type: 'corner', rot: 2, locked: false },   // Solved: rot=0 (T-R)
-      { type: 'tee', rot: 0, locked: false },      // Solved: rot=2 (L-B-R)
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
+      { type: 'straight', rot: 1, locked: false }, // (1,0) Solved: rot=1 (V)
+      { type: 'corner', rot: 0, locked: false },   // (1,1) Solved: rot=0 (T-R)
+      { type: 'tee', rot: 1, locked: false },      // (1,2) Solved: rot=1 (T-R-B)
+      { type: 'straight', rot: 0, locked: false }, // (1,3) Solved: rot=0 (H)
       
-      { type: 'corner', rot: 1, locked: false },   // Solved: rot=0 (T-R)
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
-      { type: 'corner', rot: 3, locked: false },   // Solved: rot=2 (B-L)
-      { type: 'corner', rot: 0, locked: false },   // Solved: rot=1 (R-B)
+      { type: 'corner', rot: 0, locked: false },   // (2,0) Solved: rot=0 (T-R)
+      { type: 'straight', rot: 0, locked: false }, // (2,1) Solved: rot=0 (H)
+      { type: 'corner', rot: 3, locked: false },   // (2,2) Solved: rot=3 (L-T)
+      { type: 'corner', rot: 1, locked: false },   // (2,3) Solved: rot=1 (R-B)
       
-      { type: 'straight', rot: 0, locked: false }, // Solved: rot=1 (V)
-      { type: 'straight', rot: 1, locked: false }, // Solved: rot=0 (H)
-      { type: 'corner', rot: 2, locked: false },   // Solved: rot=3 (L-T)
-      { type: 'corner', rot: 1, locked: false }    // Solved: rot=3 (L-T)
+      { type: 'straight', rot: 0, locked: false }, // (3,0) Solved: rot=0 (H)
+      { type: 'straight', rot: 0, locked: false }, // (3,1) Solved: rot=0 (H)
+      { type: 'straight', rot: 0, locked: false }, // (3,2) Solved: rot=0 (H)
+      { type: 'corner', rot: 3, locked: false }    // (3,3) Solved: rot=3 (L-T)
     ]
   },
   {

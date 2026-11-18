@@ -15,8 +15,8 @@
   --glass-glow: rgba(0, 242, 254, 0.15);
   --tile-size: 80px;
   --board-gap: 8px;
-  /* Mathematically matches the exact height of the 4x4 board: 4 tiles + 3 gaps + 36px offset */
-  --board-height: calc(4 * var(--tile-size) + 3 * var(--board-gap) + 36px);
+  /* Exact height of the 4x4 board frame: 4 tiles + 3 gaps + 20px frame padding + 16px board padding + 2px border */
+  --board-height: calc(4 * var(--tile-size) + 3 * var(--board-gap) + 38px);
 }
 
 * {
@@ -360,7 +360,7 @@ body {
   display: flex;
   flex: 1;
   gap: 20px;
-  align-items: stretch;
+  align-items: center; /* Panels and board frame share the same top edge, so terminal rows land on grid rows */
 }
 
 /* Side Panels: Battery & Bulb */
@@ -468,12 +468,19 @@ body {
 }
 
 /* Grid bounds mapping for terminals:
-   Calculate top coordinates to match grid row centers exactly (18px padding offset + row tiles)
+   Terminals are anchored to the side panels (not their inner wrappers), and the panels are exactly
+   the height of the board frame, so these offsets land the nodes on the grid row centers.
+   18px = 10px frame padding + 8px board padding.
 */
-.terminal-pos { right: -25px; top: calc(18px + var(--tile-size) / 2); }
-.terminal-bulb-in { left: -25px; top: calc(18px + 1.5 * var(--tile-size) + var(--board-gap)); }
-.terminal-bulb-out { left: -25px; top: calc(18px + 2.5 * var(--tile-size) + 2 * var(--board-gap)); }
-.terminal-neg { right: -25px; top: calc(18px + 3.5 * var(--tile-size) + 3 * var(--board-gap)); }
+.terminal-pos { right: -40px; top: calc(18px + var(--tile-size) / 2); }
+.terminal-bulb-in { left: -40px; top: calc(18px + 1.5 * var(--tile-size) + var(--board-gap)); }
+.terminal-bulb-out { left: -40px; top: calc(18px + 2.5 * var(--tile-size) + 2 * var(--board-gap)); }
+.terminal-neg { right: -40px; top: calc(18px + 3.5 * var(--tile-size) + 3 * var(--board-gap)); }
+
+/* The bulb sits on the right of the board, so its wire stub must reach leftward */
+.terminal-bulb-in, .terminal-bulb-out {
+  flex-direction: row-reverse;
+}
 
 .terminal-node {
   width: 14px;
@@ -505,7 +512,7 @@ body {
 }
 
 .terminal-wire {
-  width: 32px;
+  width: 40px;
   height: 20px;
 }
 
@@ -1087,15 +1094,15 @@ body {
     height: 80px;
   }
 
-  /* Adjust terminal line widths to keep connections aligned */
+  /* Wire stubs span the panel gap plus the frame padding so they meet the tile edges */
   .terminal-wire {
-    width: 14px;
+    width: 28px;
   }
 
-  .terminal-pos { right: -15px; }
-  .terminal-neg { right: -15px; }
-  .terminal-bulb-in { left: -15px; }
-  .terminal-bulb-out { left: -15px; }
+  .terminal-pos { right: -28px; }
+  .terminal-neg { right: -28px; }
+  .terminal-bulb-in { left: -28px; }
+  .terminal-bulb-out { left: -28px; }
 
   .terminal-sign {
     font-size: 0.9rem;
@@ -1164,13 +1171,8 @@ body {
   }
 
   .terminal-wire {
-    width: 8px;
+    width: 28px;
   }
-
-  .terminal-pos { right: -9px; }
-  .terminal-neg { right: -9px; }
-  .terminal-bulb-in { left: -9px; }
-  .terminal-bulb-out { left: -9px; }
 
   .level-grid {
     grid-template-columns: repeat(4, 1fr);

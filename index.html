@@ -123,28 +123,29 @@
               </div>
             </div>
           </div>
-          <!-- Terminal Wires connecting to the grid -->
-          <div class="terminal terminal-pos" data-row="0" title="Positive Terminal (+)">
-            <div class="terminal-node"></div>
-            <div class="terminal-wire">
-              <svg viewBox="0 0 60 20" class="wire-svg">
-                <path d="M 0 10 L 60 10" class="bg-line" />
-                <path d="M 0 10 L 60 10" class="flow-line" id="pos-flow" />
-              </svg>
-            </div>
-            <span class="terminal-sign">+</span>
-          </div>
+        </div>
 
-          <div class="terminal terminal-neg" data-row="3" title="Negative Terminal (-)">
-            <div class="terminal-node"></div>
-            <div class="terminal-wire">
-              <svg viewBox="0 0 60 20" class="wire-svg">
-                <path d="M 0 10 L 60 10" class="bg-line" />
-                <path d="M 0 10 L 60 10" class="flow-line" id="neg-flow" />
-              </svg>
-            </div>
-            <span class="terminal-sign">-</span>
+        <!-- Terminal wires plug into the grid (anchored to the panel so rows align exactly) -->
+        <div class="terminal terminal-pos" data-row="0" title="Positive Terminal (+)">
+          <div class="terminal-node"></div>
+          <div class="terminal-wire">
+            <svg viewBox="0 0 60 20" class="wire-svg">
+              <path d="M 0 10 L 60 10" class="bg-line" />
+              <path d="M 0 10 L 60 10" class="flow-line" id="pos-flow" />
+            </svg>
           </div>
+          <span class="terminal-sign">+</span>
+        </div>
+
+        <div class="terminal terminal-neg" data-row="3" title="Negative Terminal (-)">
+          <div class="terminal-node"></div>
+          <div class="terminal-wire">
+            <svg viewBox="0 0 60 20" class="wire-svg">
+              <path d="M 0 10 L 60 10" class="bg-line" />
+              <path d="M 0 10 L 60 10" class="flow-line" id="neg-flow" />
+            </svg>
+          </div>
+          <span class="terminal-sign">-</span>
         </div>
       </section>
 
@@ -191,25 +192,26 @@
             </svg>
           </div>
 
-          <!-- Bulb connecting terminals to the grid -->
-          <div class="terminal terminal-bulb-in" data-row="1" title="Bulb Inlet">
-            <div class="terminal-node"></div>
-            <div class="terminal-wire">
-              <svg viewBox="0 0 60 20" class="wire-svg">
-                <path d="M 0 10 L 60 10" class="bg-line" />
-                <path d="M 0 10 L 60 10" class="flow-line" id="bulb-in-flow" />
-              </svg>
-            </div>
-          </div>
+        </div>
 
-          <div class="terminal terminal-bulb-out" data-row="2" title="Bulb Outlet">
-            <div class="terminal-node"></div>
-            <div class="terminal-wire">
-              <svg viewBox="0 0 60 20" class="wire-svg">
-                <path d="M 0 10 L 60 10" class="bg-line" />
-                <path d="M 0 10 L 60 10" class="flow-line" id="bulb-out-flow" />
-              </svg>
-            </div>
+        <!-- Bulb connecting terminals to the grid (anchored to the panel so rows align exactly) -->
+        <div class="terminal terminal-bulb-in" data-row="1" title="Bulb Inlet">
+          <div class="terminal-node"></div>
+          <div class="terminal-wire">
+            <svg viewBox="0 0 60 20" class="wire-svg">
+              <path d="M 0 10 L 60 10" class="bg-line" />
+              <path d="M 0 10 L 60 10" class="flow-line" id="bulb-in-flow" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="terminal terminal-bulb-out" data-row="2" title="Bulb Outlet">
+          <div class="terminal-node"></div>
+          <div class="terminal-wire">
+            <svg viewBox="0 0 60 20" class="wire-svg">
+              <path d="M 0 10 L 60 10" class="bg-line" />
+              <path d="M 0 10 L 60 10" class="flow-line" id="bulb-out-flow" />
+            </svg>
           </div>
         </div>
       </section>
