@@ -64,6 +64,10 @@
           <span class="label">LEVEL</span>
           <span class="value" id="current-level-display">01</span>
         </div>
+        <div class="participant-badge" title="Participant / Team Name">
+          <span class="label">RUNNER</span>
+          <input type="text" id="participant-name-input" class="participant-input" value="Runner 1" maxlength="16" placeholder="Participant" />
+        </div>
       </div>
       
       <div class="hud-center">
@@ -78,6 +82,11 @@
       </div>
 
       <div class="hud-right">
+        <button id="btn-saved-times" class="hud-btn" title="Saved Times & Leaderboard">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+          </svg>
+        </button>
         <button id="btn-mute" class="hud-btn" title="Toggle Sound">
           <svg class="icon-mute" viewBox="0 0 24 24" width="22" height="22">
             <path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
@@ -231,6 +240,68 @@
     </div>
   </div>
 
+  <!-- Saved Times / Relayathon Leaderboard Modal -->
+  <div id="saved-times-modal" class="modal-overlay">
+    <div class="modal-content glass panel-large">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <h2>SAVED TIMES LOG</h2>
+          <span class="cyber-chip">RELAYATHON</span>
+        </div>
+        <button id="btn-close-saved-times" class="close-btn">&times;</button>
+      </div>
+
+      <!-- Quick Summary Cards -->
+      <div class="relay-summary-cards">
+        <div class="summary-card">
+          <span class="summary-label">COMPLETED RUNS</span>
+          <span class="summary-val" id="summary-total-runs">0</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">CUMULATIVE RELAY TIME</span>
+          <span class="summary-val cyan" id="summary-total-time">00:00</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">BEST STAGE TIME</span>
+          <span class="summary-val green" id="summary-best-stage">--:--</span>
+        </div>
+      </div>
+
+      <!-- Saved Times Table -->
+      <div class="saved-times-table-wrapper">
+        <table class="saved-times-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>PARTICIPANT</th>
+              <th>LEVEL</th>
+              <th>TIME</th>
+              <th>MOVES</th>
+              <th>SAVED AT</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="saved-times-tbody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+        <div id="no-saved-times-msg" class="empty-state-notice hidden">
+          No circuit times recorded yet. Complete a level to record your time!
+        </div>
+      </div>
+
+      <div class="saved-times-actions">
+        <button id="btn-export-times" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 6px;">
+            <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+          </svg>
+          COPY / EXPORT TIMES
+        </button>
+        <button id="btn-clear-times" class="btn btn-danger-ghost">RESET RECORDS</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Instructions Modal -->
   <div id="help-modal" class="modal-overlay">
     <div class="modal-content glass panel-large">
@@ -241,15 +312,18 @@
       <div class="tutorial-body">
         <section class="tutorial-section">
           <h3>THE MISSION</h3>
-          <p>Establish a closed electrical circuit by rotating the power wire tiles on the 4x4 matrix. Power must flow continuously from the positive battery terminal (+), through the light bulb, and back to the negative battery terminal (-).</p>
+          <p>Establish a closed electrical circuit by <strong>SLIDING wire tiles</strong> into empty sockets across the matrix. Tile wiring orientations are <strong>fixed and cannot be rotated</strong>. Power must flow continuously from (+), through the light bulb, and back to (-).</p>
         </section>
 
         <section class="tutorial-section">
           <h3>THE CONTROLS</h3>
           <ul class="tut-list">
-            <li><strong>Rotate Tile</strong>: Click or tap any tile to rotate it 90° clockwise.</li>
-            <li><strong>Locked Tiles</strong>: Some levels contain locked tiles (indicated by metal corners and an orange lock). These cannot be rotated and must be worked around!</li>
-            <li><strong>Sound toggle</strong>: Use the speaker icon in the top right to enable/disable synth soundtrack and clicks.</li>
+            <li><strong>Slide Tile</strong>: Click or tap any tile adjacent to an empty socket to slide it in.</li>
+            <li><strong>Push Lines</strong>: Clicking a tile in the same row/column as an empty socket pushes all tiles in that line toward the socket!</li>
+            <li><strong>Swipe & Drag</strong>: Drag/swipe tiles directly toward empty spaces on touch or mouse.</li>
+            <li><strong>Keyboard Controls</strong>: Use <strong>Arrow Keys</strong> or <strong>WASD</strong> to slide tiles into the empty space.</li>
+            <li><strong>Locked Obstacles</strong>: Identified by orange metal corner brackets. Locked tiles cannot be slid and must be routed around.</li>
+            <li><strong>Instant Timer Save</strong>: The exact millisecond your circuit connects and lights the bulb, your completion time is automatically recorded and saved to the Relayathon Log!</li>
           </ul>
         </section>
 
@@ -258,19 +332,19 @@
           <div class="tile-types">
             <div class="tile-type-item">
               <div class="tut-tile-preview" id="preview-straight"></div>
-              <span><strong>Straight</strong>: Connects opposite sides.</span>
+              <span><strong>Straight</strong>: Direct path between opposite sides.</span>
             </div>
             <div class="tile-type-item">
               <div class="tut-tile-preview" id="preview-corner"></div>
-              <span><strong>Corner</strong>: Diverts power 90 degrees.</span>
+              <span><strong>Corner</strong>: 90-degree redirection path.</span>
             </div>
             <div class="tile-type-item">
               <div class="tut-tile-preview" id="preview-tee"></div>
-              <span><strong>Tee Junction</strong>: Splits power into 3 paths.</span>
+              <span><strong>Tee Junction</strong>: 3-way distribution junction.</span>
             </div>
             <div class="tile-type-item">
               <div class="tut-tile-preview" id="preview-cross"></div>
-              <span><strong>Cross Junction</strong>: Distributes power in all 4 directions.</span>
+              <span><strong>Cross Junction</strong>: Independent 4-way crossing paths.</span>
             </div>
           </div>
         </section>
@@ -287,21 +361,25 @@
           <circle cx="50" cy="50" r="45" fill="none" stroke="#39ff14" stroke-width="2" class="ripple-circle" />
           <path d="M50,15 L60,35 L80,35 L65,50 L72,70 L50,60 L28,70 L35,50 L20,35 L40,35 Z" fill="#39ff14" />
         </svg>
-        <h2 class="victory-title">CIRCUIT ESTABLISHED</h2>
-        <p class="victory-subtitle">Power Loop Closed Successfully!</p>
+        <h2 class="victory-title">CIRCUIT ESTABLISHED!</h2>
+        <!-- Prominent Saved Time Banner -->
+        <div class="victory-time-saved-badge">
+          <span class="badge-icon">✓</span>
+          <span class="badge-text">TIME SAVED TO RELAYATHON LOG</span>
+        </div>
       </div>
 
       <div class="victory-stats">
         <div class="victory-stat-item">
-          <span class="victory-stat-label">TIME ELAPSED</span>
-          <span class="victory-stat-val" id="victory-time">00:12</span>
+          <span class="victory-stat-label">RECORDED TIME</span>
+          <span class="victory-stat-val cyan" id="victory-time">00:12</span>
         </div>
         <div class="victory-stat-item">
           <span class="victory-stat-label">MOVES MADE</span>
           <span class="victory-stat-val" id="victory-moves">14</span>
         </div>
         <div class="victory-stat-item">
-          <span class="victory-stat-label">PERFORMANCE RATING</span>
+          <span class="victory-stat-label">PERFORMANCE</span>
           <div class="stars-container" id="victory-stars">
             <!-- SVG stars populated dynamically -->
           </div>
@@ -310,6 +388,7 @@
 
       <div class="victory-actions">
         <button id="btn-next-level" class="btn btn-success btn-lg">PROCEED TO NEXT TEST</button>
+        <button id="btn-victory-view-times" class="btn btn-secondary">VIEW SAVED TIMES</button>
         <button id="btn-replay" class="btn btn-secondary">REPLAY STAGE</button>
       </div>
     </div>
