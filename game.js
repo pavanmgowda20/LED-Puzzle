@@ -198,6 +198,21 @@ class GameEngine {
     this.isLevelComplete = false;
     this.participantName = localStorage.getItem('voltloop_current_runner') || 'Runner 1';
     
+    // Improvement 3: Electric spark state
+    this.wasShortCircuited = false;
+
+    // Improvement 1: Warning alerts states
+    this.warning5MinTriggered = false;
+    this.warning1MinTriggered = false;
+
+    // Improvement 6: Live cloud sync config (Supabase + Google Sheets)
+    this.syncConfig = JSON.parse(localStorage.getItem('voltloop_sync_config')) || {
+      supabaseUrl: '',
+      supabaseKey: '',
+      supabaseTable: 'relayathon_scores',
+      sheetsUrl: ''
+    };
+
     // Save progression in local storage
     this.unlockedLevels = JSON.parse(localStorage.getItem('voltloop_unlocked')) || [0];
     this.levelRatings = JSON.parse(localStorage.getItem('voltloop_ratings')) || {};
@@ -216,6 +231,32 @@ class GameEngine {
     this.levelDisplayEl = document.getElementById('current-level-display');
     this.participantInput = document.getElementById('participant-name-input');
     
+    // Improvement 1: Progress bar DOM
+    this.progressBarContainer = document.getElementById('relay-progress-bar-container');
+    this.progressBar = document.getElementById('relay-progress-bar');
+    this.pacingTag = document.getElementById('relay-pacing-tag');
+
+    // Improvement 4: Emergency skip DOM
+    this.btnSkip = document.getElementById('btn-skip');
+    this.skipModal = document.getElementById('skip-confirm-modal');
+    this.btnCloseSkipModal = document.getElementById('btn-close-skip-modal');
+    this.btnConfirmSkip = document.getElementById('btn-confirm-skip');
+    this.btnCancelSkip = document.getElementById('btn-cancel-skip');
+
+    // Improvement 6: Cloud sync DOM
+    this.btnSyncSettings = document.getElementById('btn-sync-settings');
+    this.syncModal = document.getElementById('sync-settings-modal');
+    this.btnCloseSync = document.getElementById('btn-close-sync');
+    this.btnSaveSync = document.getElementById('btn-save-sync');
+    this.btnTestSync = document.getElementById('btn-test-sync');
+    this.syncDot = document.getElementById('sync-dot');
+    this.syncTestStatus = document.getElementById('sync-test-status');
+
+    this.inputSupabaseUrl = document.getElementById('sync-supabase-url');
+    this.inputSupabaseKey = document.getElementById('sync-supabase-key');
+    this.inputSupabaseTable = document.getElementById('sync-supabase-table');
+    this.inputSheetsUrl = document.getElementById('sync-sheets-url');
+
     this.startScreen = document.getElementById('start-screen');
     this.gameContainer = document.querySelector('.game-container');
     
@@ -261,6 +302,8 @@ class GameEngine {
       });
     }
 
+    this.setupAntiCheat();
+    this.updateSyncDotStatus();
     this.setupEventListeners();
     this.setupKeyboardControls();
     this.renderTutorialPreviews();
@@ -407,8 +450,65 @@ class GameEngine {
       this.openModal(this.savedTimesModal);
     });
 
+    // Emergency Skip Action (Improvement 4: Stuck Prevention)
+    if (this.btnSkip) {
+      this.btnSkip.addEventListener('click', () => {
+        if (this.isLevelComplete) return;
+        this.initAudio();
+        window.gameAudio.playClick();
+        this.openModal(this.skipModal);
+      });
+    }
+
+    if (this.btnCloseSkipModal) {
+      this.btnCloseSkipModal.addEventListener('click', () => {
+        this.closeModal(this.skipModal);
+      });
+    }
+
+    if (this.btnCancelSkip) {
+      this.btnCancelSkip.addEventListener('click', () => {
+        this.closeModal(this.skipModal);
+      });
+    }
+
+    if (this.btnConfirmSkip) {
+      this.btnConfirmSkip.addEventListener('click', () => {
+        this.closeModal(this.skipModal);
+        this.executeEmergencySkip();
+      });
+    }
+
+    // Cloud Sync & Projection Actions (Improvement 6)
+    if (this.btnSyncSettings) {
+      this.btnSyncSettings.addEventListener('click', () => {
+        this.initAudio();
+        window.gameAudio.playClick();
+        this.populateSyncModalFields();
+        this.openModal(this.syncModal);
+      });
+    }
+
+    if (this.btnCloseSync) {
+      this.btnCloseSync.addEventListener('click', () => {
+        this.closeModal(this.syncModal);
+      });
+    }
+
+    if (this.btnSaveSync) {
+      this.btnSaveSync.addEventListener('click', () => {
+        this.saveSyncConfig();
+      });
+    }
+
+    if (this.btnTestSync) {
+      this.btnTestSync.addEventListener('click', () => {
+        this.testCloudConnection();
+      });
+    }
+
     // Close modals on clicking background overlay
-    [this.helpModal, this.levelsModal, this.savedTimesModal, this.checkpointModal].forEach(modal => {
+    [this.helpModal, this.levelsModal, this.savedTimesModal, this.checkpointModal, this.skipModal, this.syncModal].forEach(modal => {
       if (!modal) return;
       modal.addEventListener('click', (e) => {
         if (e.target === modal) this.closeModal(modal);
@@ -512,6 +612,7 @@ class GameEngine {
     this.moves = 0;
     this.stageSeconds = 0;
     this.isLevelComplete = false;
+    this.wasShortCircuited = false;
     this.movesEl.textContent = '0';
     if (this.stageTimerEl) this.stageTimerEl.textContent = '00:00';
     this.levelDisplayEl.textContent = String(levelData.id).padStart(2, '0');
@@ -521,9 +622,13 @@ class GameEngine {
       this.totalRoundMoves = 0;
       this.completedLevels.clear();
       this.checkpoint30MinTriggered = false;
+      this.warning5MinTriggered = false;
+      this.warning1MinTriggered = false;
       this.timerEl.textContent = '00:00';
       this.timerEl.classList.remove('overtime');
     }
+
+    this.updateProgressBar();
     
     // 1. Construct initial solved state with unique tile IDs
     const baseTiles = levelData.tiles.map((t, idx) => ({
@@ -1085,20 +1190,33 @@ class GameEngine {
       if (isShortCircuited) {
         batteryStatusText.textContent = "SHORT CIRCUIT";
         batteryPanel.classList.add('energized');
-      } else if (posReachable.size > 1 || negReachable.size > 1) {
-        batteryStatusText.textContent = "CHARGING...";
+        // Improvement 3: Electric crackle & circuit-breaker audio
+        if (!this.wasShortCircuited) {
+          if (window.gameAudio && window.gameAudio.playShortCircuitSpark) {
+            window.gameAudio.playShortCircuitSpark();
+          }
+          this.wasShortCircuited = true;
+        }
       } else {
-        batteryStatusText.textContent = "STANDBY";
+        this.wasShortCircuited = false;
+        if (posReachable.size > 1 || negReachable.size > 1) {
+          batteryStatusText.textContent = "CHARGING...";
+        } else {
+          batteryStatusText.textContent = "STANDBY";
+        }
       }
     }
   }
 
   // Save completion time immediately to localStorage for the relayathon records
-  saveCompletionTime() {
+  async saveCompletionTime() {
     const levelData = LEVELS[this.currentLevelIndex];
     const stageTimeFormatted = this.formatTime(this.stageSeconds);
     const roundTimeFormatted = this.formatTime(this.roundSeconds);
     const now = new Date();
+
+    // Improvement 5: Cryptographic checksum hash
+    const hash = await this.computeVerificationHash(this.participantName, levelData.id, this.stageSeconds, this.moves);
     
     const record = {
       id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -1112,6 +1230,7 @@ class GameEngine {
       roundTimeSeconds: this.roundSeconds,
       moves: this.moves,
       totalRoundMoves: this.totalRoundMoves,
+      verificationHash: hash,
       timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       dateString: now.toLocaleDateString([], { month: 'short', day: 'numeric' })
     };
@@ -1137,7 +1256,10 @@ class GameEngine {
       }
     }
 
-    console.log(`[Relayathon Record Saved] ${this.participantName} | Level ${levelData.id} | Stage: ${stageTimeFormatted} | Round: ${roundTimeFormatted}`);
+    // Improvement 6: Live background cloud sync to Supabase and Google Sheets
+    this.syncRecordToCloud(record);
+
+    console.log(`[Relayathon Record Saved] ${this.participantName} | Level ${levelData.id} | Stage: ${stageTimeFormatted} | Round: ${roundTimeFormatted} | Hash: ${hash}`);
   }
 
   updateTerminals(posReachable, negReachable, energizedTiles, shortTiles) {
@@ -1323,6 +1445,27 @@ class GameEngine {
         this.stageTimerEl.textContent = this.formatTime(this.stageSeconds);
       }
 
+      // Improvement 1: Dynamic progress bar & audio alerts
+      this.updateProgressBar();
+
+      // 25:00 mark (5 minutes remaining)
+      if (this.roundSeconds === 1500 && !this.warning5MinTriggered) {
+        this.warning5MinTriggered = true;
+        if (window.gameAudio && window.gameAudio.playWarning5Min) {
+          window.gameAudio.playWarning5Min();
+        }
+        this.showToast('⚠️ 5 MINUTES REMAINING on the 30:00 round clock!');
+      }
+
+      // 29:00 mark (1 minute remaining)
+      if (this.roundSeconds === 1740 && !this.warning1MinTriggered) {
+        this.warning1MinTriggered = true;
+        if (window.gameAudio && window.gameAudio.playWarning1Min) {
+          window.gameAudio.playWarning1Min();
+        }
+        this.showToast('🚨 60 SECONDS LEFT: Final minute countdown!');
+      }
+
       if (this.roundSeconds >= 1800) {
         this.timerEl.classList.add('overtime');
       }
@@ -1343,7 +1486,7 @@ class GameEngine {
   }
 
   // Automatic 30:00 milestone handler
-  trigger30MinCheckpoint() {
+  async trigger30MinCheckpoint() {
     if (window.gameAudio && window.gameAudio.playCheckpoint) {
       window.gameAudio.playCheckpoint();
     }
@@ -1351,6 +1494,9 @@ class GameEngine {
     const levelData = LEVELS[this.currentLevelIndex];
     const now = new Date();
     const completedArr = Array.from(this.completedLevels).sort((a,b) => a - b);
+
+    // Improvement 5: Cryptographic checksum hash for 30:00 milestone
+    const hash = await this.computeVerificationHash(this.participantName, levelData.id, this.stageSeconds, this.moves);
 
     const record = {
       id: `checkpoint-30m-${Date.now()}`,
@@ -1365,6 +1511,7 @@ class GameEngine {
       moves: this.moves,
       totalRoundMoves: this.totalRoundMoves + this.moves,
       completedCount: completedArr.length,
+      verificationHash: hash,
       timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       dateString: now.toLocaleDateString([], { month: 'short', day: 'numeric' })
     };
@@ -1372,6 +1519,9 @@ class GameEngine {
     // Prepend to savedTimes and commit immediately
     this.savedTimes.unshift(record);
     localStorage.setItem('voltloop_saved_times', JSON.stringify(this.savedTimes));
+
+    // Improvement 6: Live background cloud sync
+    this.syncRecordToCloud(record);
 
     // Populate Checkpoint Modal
     const runnerEl = document.getElementById('checkpoint-runner');
@@ -1475,16 +1625,23 @@ class GameEngine {
         minStageSeconds = rec.timeSeconds;
       }
 
-      const isCheckpoint = rec.type === '30min_checkpoint';
-      const typeBadge = isCheckpoint 
-        ? `<span class="cyber-chip orange">30:00 MILESTONE</span>`
-        : `<span class="cyber-chip cyan">STAGE CLEAR</span>`;
+      let typeBadge;
+      if (rec.type === '30min_checkpoint') {
+        typeBadge = `<span class="cyber-chip orange">30:00 MILESTONE</span>`;
+      } else if (rec.type === 'stage_skipped') {
+        typeBadge = `<span class="cyber-chip skipped">SKIPPED (+3m)</span>`;
+      } else {
+        typeBadge = `<span class="cyber-chip cyan">STAGE CLEAR</span>`;
+      }
 
       const stageDisplay = isCheckpoint
         ? `L${rec.levelId} <span style="color:var(--accent-orange); font-size:0.75rem;">(${rec.completedCount || 0}/10 Done)</span>`
         : `Level ${rec.levelId} <span style="color:var(--text-muted); font-size:0.75rem;">(${this.escapeHTML(rec.levelName)})</span>`;
 
       const roundTimeDisplay = rec.roundTimeFormatted || rec.timeFormatted || '--:--';
+      const hashDisplay = rec.verificationHash 
+        ? `<span class="cyber-chip hash" title="Click to copy SHA-256 checksum: ${rec.verificationHash}" data-hash="${rec.verificationHash}">${rec.verificationHash.substring(0, 8)}…</span>`
+        : `<span style="color:var(--text-muted); font-size:0.75rem;">--</span>`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -1495,9 +1652,23 @@ class GameEngine {
         <td class="time-cell cyan">${rec.timeFormatted}</td>
         <td class="time-cell orange">${roundTimeDisplay}</td>
         <td>${rec.moves}</td>
+        <td class="hash-cell">${hashDisplay}</td>
         <td>${rec.dateString} ${rec.timeString}</td>
         <td><button class="del-btn" title="Delete record" data-id="${rec.id}">&times;</button></td>
       `;
+
+      const hashChip = tr.querySelector('.cyber-chip.hash');
+      if (hashChip) {
+        hashChip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const fullHash = hashChip.dataset.hash;
+          if (navigator.clipboard && fullHash) {
+            navigator.clipboard.writeText(fullHash).then(() => {
+              this.showToast(`Checksum copied: ${fullHash}`);
+            });
+          }
+        });
+      }
 
       tr.querySelector('.del-btn').addEventListener('click', () => {
         this.deleteSavedRecord(rec.id);
@@ -1523,12 +1694,15 @@ class GameEngine {
       return;
     }
 
-    let csvContent = "Rank,Type,Participant,Level,Level Name,Stage Time (mm:ss),Stage Time (Seconds),Round Time (mm:ss),Round Time (Seconds),Moves,Date,Time\n";
+    let csvContent = "Rank,Type,Participant,Level,Level Name,Stage Time (mm:ss),Stage Time (Seconds),Round Time (mm:ss),Round Time (Seconds),Moves,Verification Hash,Date,Time\n";
     this.savedTimes.forEach((r, idx) => {
-      const type = r.type === '30min_checkpoint' ? '30Min Checkpoint' : 'Stage Clear';
+      let type = 'Stage Clear';
+      if (r.type === '30min_checkpoint') type = '30Min Checkpoint';
+      else if (r.type === 'stage_skipped') type = 'Stage Skipped (+3m)';
       const roundSec = r.roundTimeSeconds || r.timeSeconds || 0;
       const roundFmt = r.roundTimeFormatted || r.timeFormatted || '';
-      csvContent += `${idx + 1},"${type}","${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},"${roundFmt}",${roundSec},${r.moves},"${r.dateString}","${r.timeString}"\n`;
+      const hash = r.verificationHash || '';
+      csvContent += `${idx + 1},"${type}","${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},"${roundFmt}",${roundSec},${r.moves},"${hash}","${r.dateString}","${r.timeString}"\n`;
     });
 
     navigator.clipboard.writeText(csvContent).then(() => {
@@ -1544,12 +1718,15 @@ class GameEngine {
       return;
     }
 
-    let csvContent = "Rank,Type,Participant,Level,Level Name,Stage Time (mm:ss),Stage Time (Seconds),Round Time (mm:ss),Round Time (Seconds),Moves,Date,Time\n";
+    let csvContent = "Rank,Type,Participant,Level,Level Name,Stage Time (mm:ss),Stage Time (Seconds),Round Time (mm:ss),Round Time (Seconds),Moves,Verification Hash,Date,Time\n";
     this.savedTimes.forEach((r, idx) => {
-      const type = r.type === '30min_checkpoint' ? '30Min Checkpoint' : 'Stage Clear';
+      let type = 'Stage Clear';
+      if (r.type === '30min_checkpoint') type = '30Min Checkpoint';
+      else if (r.type === 'stage_skipped') type = 'Stage Skipped (+3m)';
       const roundSec = r.roundTimeSeconds || r.timeSeconds || 0;
       const roundFmt = r.roundTimeFormatted || r.timeFormatted || '';
-      csvContent += `${idx + 1},"${type}","${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},"${roundFmt}",${roundSec},${r.moves},"${r.dateString}","${r.timeString}"\n`;
+      const hash = r.verificationHash || '';
+      csvContent += `${idx + 1},"${type}","${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},"${roundFmt}",${roundSec},${r.moves},"${hash}","${r.dateString}","${r.timeString}"\n`;
     });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1563,6 +1740,341 @@ class GameEngine {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     this.showToast('CSV scores file downloaded to your device!');
+  }
+
+  // ==========================================================================
+  // IMPROVEMENT 1: Progress Bar & Warning Alert Updates
+  // ==========================================================================
+  updateProgressBar() {
+    if (!this.progressBar) return;
+    const maxSec = 1800; // 30 minutes
+    const pct = Math.min(100, (this.roundSeconds / maxSec) * 100);
+    this.progressBar.style.width = `${pct}%`;
+
+    if (this.progressBarContainer) {
+      this.progressBarContainer.classList.remove('warning-amber', 'warning-red', 'overtime-orange');
+      
+      if (this.roundSeconds >= 1800) {
+        this.progressBarContainer.classList.add('overtime-orange');
+        const otSec = this.roundSeconds - 1800;
+        if (this.pacingTag) {
+          this.pacingTag.textContent = `⚡ OVERTIME (+${this.formatTime(otSec)}) // PACING EXTENDED`;
+        }
+      } else if (this.roundSeconds >= 1740) { // 29:00+ (1 min left)
+        this.progressBarContainer.classList.add('warning-red');
+        const rem = 1800 - this.roundSeconds;
+        if (this.pacingTag) {
+          this.pacingTag.textContent = `🚨 FINAL MINUTE: ${rem}s REMAINING (${this.formatTime(this.roundSeconds)} / 30:00)`;
+        }
+      } else if (this.roundSeconds >= 1500) { // 25:00+ (5 mins left)
+        this.progressBarContainer.classList.add('warning-amber');
+        const rem = 1800 - this.roundSeconds;
+        if (this.pacingTag) {
+          this.pacingTag.textContent = `⚠️ 5 MINS REMAINING (${this.formatTime(this.roundSeconds)} / 30:00)`;
+        }
+      } else {
+        if (this.pacingTag) {
+          this.pacingTag.textContent = `PACING: NORMAL (${this.formatTime(this.roundSeconds)} / 30:00)`;
+        }
+      }
+    }
+  }
+
+  // ==========================================================================
+  // IMPROVEMENT 4: Emergency Skip (+3:00 Time Penalty)
+  // ==========================================================================
+  async executeEmergencySkip() {
+    const penalty = 180; // +3:00
+    this.roundSeconds += penalty;
+    this.stageSeconds += penalty;
+
+    // Refresh displays immediately
+    this.timerEl.textContent = this.formatTime(this.roundSeconds);
+    if (this.stageTimerEl) {
+      this.stageTimerEl.textContent = this.formatTime(this.stageSeconds);
+    }
+    this.updateProgressBar();
+
+    const levelData = LEVELS[this.currentLevelIndex];
+    const stageTimeFormatted = this.formatTime(this.stageSeconds);
+    const roundTimeFormatted = this.formatTime(this.roundSeconds);
+    const now = new Date();
+
+    const hash = await this.computeVerificationHash(this.participantName, levelData.id, this.stageSeconds, this.moves);
+
+    const record = {
+      id: `skip-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type: 'stage_skipped',
+      participant: this.participantName,
+      levelId: levelData.id,
+      levelName: levelData.name,
+      timeFormatted: stageTimeFormatted,
+      timeSeconds: this.stageSeconds,
+      roundTimeFormatted: roundTimeFormatted,
+      roundTimeSeconds: this.roundSeconds,
+      moves: this.moves,
+      totalRoundMoves: this.totalRoundMoves + this.moves,
+      penaltyAdded: penalty,
+      verificationHash: hash,
+      timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      dateString: now.toLocaleDateString([], { month: 'short', day: 'numeric' })
+    };
+
+    this.savedTimes.unshift(record);
+    localStorage.setItem('voltloop_saved_times', JSON.stringify(this.savedTimes));
+
+    // Unlock next level
+    if (this.currentLevelIndex < LEVELS.length - 1) {
+      const nextIndex = this.currentLevelIndex + 1;
+      if (!this.unlockedLevels.includes(nextIndex)) {
+        this.unlockedLevels.push(nextIndex);
+        localStorage.setItem('voltloop_unlocked', JSON.stringify(this.unlockedLevels));
+      }
+    }
+
+    // Live cloud sync in background
+    this.syncRecordToCloud(record);
+
+    this.showToast('⚠️ STAGE SKIPPED: +3:00 Penalty applied! Advancing to next puzzle...');
+
+    if (this.currentLevelIndex < LEVELS.length - 1) {
+      this.currentLevelIndex++;
+      this.loadLevel(this.currentLevelIndex, false); // Timer continues running!
+    } else {
+      this.showToast('Final stage reached! Grand Prix complete.');
+    }
+  }
+
+  // ==========================================================================
+  // IMPROVEMENT 5: Anti-Cheat Keyboard Lock & SHA-256 Checksum Hash
+  // ==========================================================================
+  setupAntiCheat() {
+    // Intercept inspection hotkeys (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U)
+    window.addEventListener('keydown', (e) => {
+      const isF12 = e.key === 'F12' || e.keyCode === 123;
+      const isDevToolsCombo = (e.ctrlKey || e.metaKey) && e.shiftKey && (
+        e.key === 'I' || e.key === 'i' ||
+        e.key === 'J' || e.key === 'j' ||
+        e.key === 'C' || e.key === 'c'
+      );
+      const isViewSource = (e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U');
+
+      if (isF12 || isDevToolsCombo || isViewSource) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.showToast('🔒 Developer Tools locked for Relaython competition fairness!');
+        return false;
+      }
+    }, true);
+
+    // Lock context menu (right-click inspect)
+    window.addEventListener('contextmenu', (e) => {
+      if (e.target && e.target.tagName === 'INPUT' && e.target.type !== 'password') {
+        return;
+      }
+      e.preventDefault();
+      this.showToast('🔒 Right-click inspect locked for competition fairness.');
+    });
+  }
+
+  async computeVerificationHash(participant, levelId, timeSeconds, moves) {
+    const secret = 'RELAYATHON_2026_CIRCUIT_SECURE_SALT_9841';
+    const raw = `${participant || 'Runner'}|${levelId}|${timeSeconds}|${moves}|${secret}`;
+    try {
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle) {
+        const enc = new TextEncoder();
+        const buf = await window.crypto.subtle.digest('SHA-256', enc.encode(raw));
+        const hashArray = Array.from(new Uint8Array(buf));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+      }
+    } catch (e) {}
+
+    // Deterministic fallback (FNV-1a / Murmur hybrid)
+    let h1 = 0x811c9dc5, h2 = 0x27d4eb2f;
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw.charCodeAt(i);
+      h1 ^= ch;
+      h1 = Math.imul(h1, 0x01000193);
+      h2 = Math.imul(h2 ^ ch, 0x5bd1e995);
+    }
+    const hex1 = ('00000000' + (h1 >>> 0).toString(16)).slice(-8);
+    const hex2 = ('00000000' + (h2 >>> 0).toString(16)).slice(-8);
+    return `${hex1}${hex2}`;
+  }
+
+  // ==========================================================================
+  // IMPROVEMENT 6: Live Cloud Sync & Webhook (Supabase + Google Sheets)
+  // ==========================================================================
+  updateSyncDotStatus() {
+    if (!this.syncDot) return;
+    const hasConfig = !!(this.syncConfig.supabaseUrl || this.syncConfig.sheetsUrl);
+    this.syncDot.className = `sync-status-dot ${hasConfig ? 'active' : ''}`;
+  }
+
+  populateSyncModalFields() {
+    if (this.inputSupabaseUrl) this.inputSupabaseUrl.value = this.syncConfig.supabaseUrl || '';
+    if (this.inputSupabaseKey) this.inputSupabaseKey.value = this.syncConfig.supabaseKey || '';
+    if (this.inputSupabaseTable) this.inputSupabaseTable.value = this.syncConfig.supabaseTable || 'relayathon_scores';
+    if (this.inputSheetsUrl) this.inputSheetsUrl.value = this.syncConfig.sheetsUrl || '';
+    if (this.syncTestStatus) {
+      this.syncTestStatus.className = 'sync-status-msg hidden';
+      this.syncTestStatus.textContent = '';
+    }
+  }
+
+  saveSyncConfig() {
+    this.syncConfig = {
+      supabaseUrl: (this.inputSupabaseUrl?.value || '').trim(),
+      supabaseKey: (this.inputSupabaseKey?.value || '').trim(),
+      supabaseTable: (this.inputSupabaseTable?.value || 'relayathon_scores').trim(),
+      sheetsUrl: (this.inputSheetsUrl?.value || '').trim()
+    };
+    localStorage.setItem('voltloop_sync_config', JSON.stringify(this.syncConfig));
+    this.updateSyncDotStatus();
+    this.closeModal(this.syncModal);
+    this.showToast('Cloud live sync configuration saved!');
+  }
+
+  async testCloudConnection() {
+    if (!this.syncTestStatus) return;
+    this.syncTestStatus.className = 'sync-status-msg';
+    this.syncTestStatus.style.display = 'block';
+    this.syncTestStatus.textContent = 'Testing connection endpoints...';
+
+    const testSupabaseUrl = (this.inputSupabaseUrl?.value || '').trim();
+    const testSupabaseKey = (this.inputSupabaseKey?.value || '').trim();
+    const testSheetsUrl = (this.inputSheetsUrl?.value || '').trim();
+
+    const results = [];
+
+    if (testSupabaseUrl && testSupabaseKey) {
+      try {
+        const cleanUrl = testSupabaseUrl.replace(/\/+$/, '');
+        const table = (this.inputSupabaseTable?.value || 'relayathon_scores').trim();
+        const res = await fetch(`${cleanUrl}/rest/v1/${table}?limit=1`, {
+          method: 'GET',
+          headers: {
+            'apikey': testSupabaseKey,
+            'Authorization': `Bearer ${testSupabaseKey}`
+          }
+        });
+        if (res.ok) {
+          results.push('✓ Supabase: Connected successfully');
+        } else {
+          results.push(`⚠ Supabase: HTTP ${res.status} (Verify URL & Key)`);
+        }
+      } catch (e) {
+        results.push(`✕ Supabase: Network error (${e.message})`);
+      }
+    } else {
+      results.push('○ Supabase: Not configured');
+    }
+
+    if (testSheetsUrl) {
+      try {
+        // Ping test to Apps Script Web App
+        await fetch(testSheetsUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ ping: true, test: 'connection_test' })
+        });
+        results.push('✓ Google Sheets: Webhook endpoint reachable');
+      } catch (e) {
+        results.push(`✕ Google Sheets: Webhook failed (${e.message})`);
+      }
+    } else {
+      results.push('○ Google Sheets: Not configured');
+    }
+
+    this.syncTestStatus.className = 'sync-status-msg success';
+    this.syncTestStatus.innerHTML = results.join('<br>');
+  }
+
+  async syncRecordToCloud(record) {
+    if (!this.syncConfig) return;
+    const { supabaseUrl, supabaseKey, supabaseTable, sheetsUrl } = this.syncConfig;
+    const hasSupabase = !!(supabaseUrl && supabaseKey);
+    const hasSheets = !!sheetsUrl;
+
+    if (!hasSupabase && !hasSheets) return;
+
+    if (this.syncDot) {
+      this.syncDot.className = 'sync-status-dot syncing';
+    }
+
+    const payload = {
+      roundNumber: 1,
+      stageId: record.levelId,
+      stageName: record.levelName || `Level ${record.levelId}`,
+      type: record.type,
+      participant: record.participant,
+      stageSeconds: record.timeSeconds,
+      roundSeconds: record.roundTimeSeconds,
+      stageTimeFormatted: record.timeFormatted,
+      roundTimeFormatted: record.roundTimeFormatted,
+      moves: record.moves,
+      verificationHash: record.verificationHash || '',
+      recordedAt: new Date().toISOString()
+    };
+
+    let allOk = true;
+
+    // 1. Supabase REST API POST
+    if (hasSupabase) {
+      try {
+        const cleanUrl = supabaseUrl.replace(/\/+$/, '');
+        const table = (supabaseTable || 'relayathon_scores').trim();
+        const res = await fetch(`${cleanUrl}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            participant: payload.participant,
+            stage_id: payload.stageId,
+            stage_name: payload.stageName,
+            event_type: payload.type,
+            stage_seconds: payload.stageSeconds,
+            round_seconds: payload.roundSeconds,
+            moves: payload.moves,
+            verification_hash: payload.verificationHash,
+            created_at: payload.recordedAt
+          })
+        });
+        if (!res.ok) {
+          console.warn('[Cloud Sync] Supabase status:', res.status);
+          allOk = false;
+        }
+      } catch (err) {
+        console.warn('[Cloud Sync] Supabase error:', err);
+        allOk = false;
+      }
+    }
+
+    // 2. Google Sheets Apps Script Webhook POST (no-cors mode handles Google 302 redirect cleanly)
+    if (hasSheets) {
+      try {
+        await fetch(sheetsUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn('[Cloud Sync] Google Sheets error:', err);
+        allOk = false;
+      }
+    }
+
+    if (this.syncDot) {
+      this.syncDot.className = `sync-status-dot ${allOk ? 'active' : 'error'}`;
+    }
   }
 
   showToast(msg) {

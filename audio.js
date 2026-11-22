@@ -222,12 +222,127 @@ class AudioSynth {
         gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
       } catch (e) {}
     }
-    
+
     setTimeout(() => {
       oscs.forEach(osc => {
         try { osc.stop(); } catch(e) {}
       });
     }, 200);
+  }
+
+  playShortCircuitSpark() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const now = this.ctx.currentTime;
+    
+    // 1. Low breaker buzz (60Hz mains surge)
+    const osc1 = this.ctx.createOscillator();
+    const gain1 = this.ctx.createGain();
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(60, now);
+    osc1.frequency.linearRampToValueAtTime(30, now + 0.22);
+    gain1.gain.setValueAtTime(0.25, now);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+    osc1.connect(gain1);
+    gain1.connect(this.ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.25);
+
+    // 2. High frequency electrical crackle / spark
+    const osc2 = this.ctx.createOscillator();
+    const gain2 = this.ctx.createGain();
+    osc2.type = 'square';
+    osc2.frequency.setValueAtTime(1400, now);
+    osc2.frequency.exponentialRampToValueAtTime(150, now + 0.16);
+    gain2.gain.setValueAtTime(0.2, now);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+    osc2.connect(gain2);
+    gain2.connect(this.ctx.destination);
+    osc2.start(now);
+    osc2.stop(now + 0.18);
+
+    // 3. Noise crackle burst for visceral electric spark
+    try {
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.14);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseFilter = this.ctx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.value = 2200;
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.18, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(this.ctx.destination);
+      noise.start(now);
+    } catch (e) {}
+  }
+
+  playWarning5Min() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const now = this.ctx.currentTime;
+    // Dual-tone amber chime (D5 -> A5: 587.33Hz -> 880Hz)
+    const tones = [587.33, 880];
+    tones.forEach((freq, idx) => {
+      const time = now + idx * 0.16;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, time);
+
+      gain.gain.setValueAtTime(0.0, time);
+      gain.gain.linearRampToValueAtTime(0.15, time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(time);
+      osc.stop(time + 0.5);
+    });
+  }
+
+  playWarning1Min() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const now = this.ctx.currentTime;
+    // Staccato double pulse urgent alert (880Hz x 2)
+    [0, 0.15].forEach((offset) => {
+      const time = now + offset;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(880, time);
+
+      gain.gain.setValueAtTime(0.0, time);
+      gain.gain.linearRampToValueAtTime(0.18, time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(time);
+      osc.stop(time + 0.13);
+    });
   }
 }
 

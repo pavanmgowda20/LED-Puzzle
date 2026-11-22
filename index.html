@@ -56,6 +56,15 @@
 
   <!-- Main Game Container -->
   <div class="game-container hidden">
+    <!-- Cyberpunk Top Progress Bar -->
+    <div id="relay-progress-bar-container" class="relay-progress-bar-container">
+      <div id="relay-progress-bar" class="relay-progress-bar"></div>
+      <div class="relay-pacing-indicator">
+        <span class="pacing-pulse-dot" id="pacing-dot"></span>
+        <span id="relay-pacing-tag">PACING: NORMAL (00:00 / 30:00)</span>
+      </div>
+    </div>
+
     <!-- Header / HUD -->
     <header class="hud-header glass">
       <div class="hud-left">
@@ -89,6 +98,18 @@
       </div>
 
       <div class="hud-right">
+        <button id="btn-skip" class="hud-btn btn-warning-ghost" title="Skip Puzzle (+3:00 Time Penalty)">
+          <svg viewBox="0 0 24 24" width="16" height="16">
+            <path fill="currentColor" d="M4,18L12.5,12L4,6V18M13,6V18L21.5,12L13,6Z"/>
+          </svg>
+          <span class="btn-skip-label">SKIP (+3m)</span>
+        </button>
+        <button id="btn-sync-settings" class="hud-btn" title="Cloud Sync & Live Projection Webhook">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path fill="currentColor" d="M19.35,10.04C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.04C2.34,8.36 0,10.91 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.04M19,18H6A4,4 0 0,1 2,14C2,11.95 3.53,10.24 5.56,10.03L6.63,9.92L7.13,8.97C8.08,7.14 9.94,6 12,6C14.65,6 16.85,7.94 17.24,10.5L17.57,12.63L19.72,12.75C20.97,12.82 22,13.88 22,15A3,3 0 0,1 19,18Z"/>
+          </svg>
+          <span class="sync-status-dot" id="sync-dot" title="Cloud sync status"></span>
+        </button>
         <button id="btn-saved-times" class="hud-btn" title="Saved Times & Leaderboard">
           <svg viewBox="0 0 24 24" width="20" height="20">
             <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
@@ -334,6 +355,7 @@
               <th>STAGE TIME</th>
               <th>ROUND TIME</th>
               <th>MOVES</th>
+              <th>VERIFICATION</th>
               <th>SAVED AT</th>
               <th></th>
             </tr>
@@ -462,6 +484,136 @@
         <button id="btn-next-level" class="btn btn-success btn-lg">PROCEED TO NEXT TEST</button>
         <button id="btn-victory-view-times" class="btn btn-secondary">VIEW SAVED TIMES</button>
         <button id="btn-replay" class="btn btn-secondary">REPLAY STAGE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skip Confirmation Modal (Improvement 4: Emergency Skip) -->
+  <div id="skip-confirm-modal" class="modal-overlay">
+    <div class="modal-content glass panel-medium text-center">
+      <div class="modal-header">
+        <h2 style="color: var(--accent-orange); display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+          </svg>
+          EMERGENCY SKIP
+        </h2>
+        <button id="btn-close-skip-modal" class="close-btn">&times;</button>
+      </div>
+      <div style="padding: 16px 0;">
+        <p style="font-size: 1.05rem; line-height: 1.5; margin-bottom: 14px; color: var(--text-main);">
+          Are you sure you want to skip this circuit puzzle?
+        </p>
+        <div style="background: rgba(255, 120, 0, 0.12); border: 1px solid rgba(255, 120, 0, 0.35); border-radius: 8px; padding: 14px; margin-bottom: 18px; text-align: left;">
+          <div style="color: #ffaa00; font-weight: 700; font-size: 1.15rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <span>⏱ +3:00 TIME PENALTY</span>
+          </div>
+          <p style="font-size: 0.88rem; color: #cbd5e1; margin: 0; line-height: 1.4;">
+            180 seconds will be immediately added to your <strong>Round Timer</strong> and <strong>Stage Timer</strong>. The circuit will be recorded as <code>SKIPPED</code> in the official Relayathon log to keep your team moving.
+          </p>
+        </div>
+      </div>
+      <div class="modal-actions" style="display: flex; gap: 12px;">
+        <button id="btn-confirm-skip" class="btn btn-primary btn-full" style="background: linear-gradient(135deg, #ff7700, #ff3300); border-color: #ff5500;">
+          CONFIRM SKIP (+3:00)
+        </button>
+        <button id="btn-cancel-skip" class="btn btn-secondary btn-full">
+          CANCEL & KEEP SOLVING
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Cloud Projection & Leaderboard Webhook Modal (Improvement 6) -->
+  <div id="sync-settings-modal" class="modal-overlay">
+    <div class="modal-content glass panel-large">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <h2>LIVE CLOUD PROJECTION</h2>
+          <span class="cyber-chip">SUPABASE &amp; SHEETS</span>
+        </div>
+        <button id="btn-close-sync" class="close-btn">&times;</button>
+      </div>
+      <div class="sync-settings-body" style="padding: 12px 0; max-height: 70vh; overflow-y: auto;">
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem; line-height: 1.4;">
+          Connect this laptop to the central stage screen. Every cleared circuit, emergency skip, or 30:00 checkpoint is instantly synced in the background to <strong>Supabase</strong> and <strong>Google Sheets</strong>.
+        </p>
+        
+        <!-- Supabase Block -->
+        <div class="sync-section-box">
+          <div class="sync-section-header">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="#3ecf8e"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm5.41 8.59l-6.2 7.23a.75.75 0 0 1-1.2-.14l-2.4-4a.75.75 0 1 1 1.28-.77l1.72 2.87 5.56-6.48a.75.75 0 1 1 1.14.98l.09.31z"/></svg>
+            <h3 style="color: #3ecf8e; margin: 0; font-size: 1rem;">Supabase Database Sync</h3>
+          </div>
+          <div class="sync-input-grid">
+            <div class="sync-field">
+              <label for="sync-supabase-url">SUPABASE URL</label>
+              <input type="text" id="sync-supabase-url" class="participant-input full-width" placeholder="https://your-project.supabase.co" />
+            </div>
+            <div class="sync-field">
+              <label for="sync-supabase-key">SUPABASE ANON / SERVICE KEY</label>
+              <input type="password" id="sync-supabase-key" class="participant-input full-width" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." />
+            </div>
+            <div class="sync-field">
+              <label for="sync-supabase-table">TABLE NAME</label>
+              <input type="text" id="sync-supabase-table" class="participant-input full-width" value="relayathon_scores" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Google Sheets Webhook Block -->
+        <div class="sync-section-box">
+          <div class="sync-section-header">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="#00f2fe"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            <h3 style="color: #00f2fe; margin: 0; font-size: 1rem;">Google Sheets Live Webhook (Apps Script)</h3>
+          </div>
+          <div class="sync-field">
+            <label for="sync-sheets-url">APPS SCRIPT WEB APP URL (doPost)</label>
+            <input type="text" id="sync-sheets-url" class="participant-input full-width" placeholder="https://script.google.com/macros/s/.../exec" />
+          </div>
+          <p style="font-size: 0.8rem; color: #94a3b8; margin: 8px 0 0 0;">
+            Payload delivers each round's split times and cryptographic SHA-256 hash. The script creates separate sheets per round automatically!
+          </p>
+        </div>
+
+        <details class="apps-script-details">
+          <summary>📋 Click to view one-click Google Apps Script code for your Google Sheet</summary>
+          <pre class="code-box">
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheetName = "Round " + (data.roundNumber || 1);
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      sheet.appendRow(["Timestamp", "Type", "Participant", "Stage", "Stage Seconds", "Round Seconds", "Moves", "Verification Hash"]);
+      sheet.getRange(1, 1, 1, 8).setFontWeight("bold").setBackground("#1a1a2e").setFontColor("#00f2fe");
+    }
+    sheet.appendRow([
+      new Date(),
+      data.type || "stage_cleared",
+      data.participant || "Runner",
+      data.stageId || 1,
+      data.stageSeconds || 0,
+      data.roundSeconds || 0,
+      data.moves || 0,
+      data.verificationHash || ""
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({status: "ok"})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({status: "error", error: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+          </pre>
+        </details>
+
+        <div id="sync-test-status" class="sync-status-msg hidden"></div>
+
+        <div class="sync-modal-buttons">
+          <button id="btn-test-sync" class="btn btn-secondary">TEST CONNECTION</button>
+          <button id="btn-save-sync" class="btn btn-primary">SAVE CLOUD CONFIG</button>
+        </div>
       </div>
     </div>
   </div>
