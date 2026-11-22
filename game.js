@@ -17,12 +17,13 @@ const BASE_MASKS = {
   cross: MASK_TOP | MASK_RIGHT | MASK_BOTTOM | MASK_LEFT // 15
 };
 
-// 10 Curated and 100% Verified Solvable Levels with Sliding Scrambling
+// 10 Curated and 100% Verified Solvable Levels with Sliding Scrambling (Graduated Difficulty)
 const LEVELS = [
-  // Level 1: System Ignition (2 empty slots, perimeter loop)
+  // Level 1: System Ignition (Easy - 2 empty slots, perimeter loop)
   {
     id: 1,
     name: "System Ignition",
+    difficulty: "easy",
     emptySlots: [5, 6],
     scrambleMoves: 14,
     movesLimit: 14,
@@ -33,10 +34,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 }
     ]
   },
-  // Level 2: Stepped Conduit (2 empty slots, through interior)
+  // Level 2: Stepped Conduit (Easy+ - 2 empty slots, interior conduit)
   {
     id: 2,
     name: "Stepped Conduit",
+    difficulty: "easy",
     emptySlots: [2, 3],
     scrambleMoves: 18,
     movesLimit: 18,
@@ -47,10 +49,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 },   { type: 'corner', rot: 2 }
     ]
   },
-  // Level 3: Serpentine Lane (1 empty slot)
+  // Level 3: Serpentine Lane (Medium-Easy - 1 empty slot, S-curve)
   {
     id: 3,
     name: "Serpentine Lane",
+    difficulty: "med",
     emptySlots: [3],
     scrambleMoves: 24,
     movesLimit: 22,
@@ -61,10 +64,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 },   { type: 'corner', rot: 1 }
     ]
   },
-  // Level 4: Static Core (1 empty slot, 1 locked obstacle at (1,1))
+  // Level 4: Static Core (Medium - 1 empty slot, 1 locked obstacle at [1,1])
   {
     id: 4,
     name: "Static Core",
+    difficulty: "med",
     emptySlots: [6],
     scrambleMoves: 28,
     movesLimit: 26,
@@ -75,10 +79,11 @@ const LEVELS = [
       { type: 'corner', rot: 3 },   { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 }
     ]
   },
-  // Level 5: Split Junctions (Tee tiles, 1 empty slot)
+  // Level 5: Split Junctions (Medium+ - Tee branches, 1 empty slot)
   {
     id: 5,
     name: "Split Junctions",
+    difficulty: "med",
     emptySlots: [9],
     scrambleMoves: 32,
     movesLimit: 30,
@@ -89,10 +94,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 }
     ]
   },
-  // Level 6: Twin Anchors (2 locked obstacle tiles at 5 and 10)
+  // Level 6: Twin Anchors (Hard - 2 locked obstacle tiles at 5 and 10)
   {
     id: 6,
     name: "Twin Anchors",
+    difficulty: "hard",
     emptySlots: [6],
     scrambleMoves: 35,
     movesLimit: 32,
@@ -103,10 +109,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 }
     ]
   },
-  // Level 7: Quantum Crossing (Cross junction, 1 empty slot)
+  // Level 7: Quantum Crossing (Hard+ - Cross junction, 1 empty slot)
   {
     id: 7,
     name: "Quantum Crossing",
+    difficulty: "hard",
     emptySlots: [2],
     scrambleMoves: 38,
     movesLimit: 34,
@@ -117,10 +124,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 },   { type: 'corner', rot: 1 }
     ]
   },
-  // Level 8: Decoy Labyrinth (Multiple decoys, 1 empty slot)
+  // Level 8: Decoy Labyrinth (Very Hard - Multiple decoys & corners, 1 empty slot)
   {
     id: 8,
     name: "Decoy Labyrinth",
+    difficulty: "hard",
     emptySlots: [9],
     scrambleMoves: 40,
     movesLimit: 36,
@@ -131,10 +139,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 }
     ]
   },
-  // Level 9: Voltage Relay (1 locked obstacle, 2 tee tiles, 45 scramble moves)
+  // Level 9: Voltage Relay (Expert - 1 locked obstacle, 2 tee tiles, 45 scramble moves)
   {
     id: 9,
     name: "Voltage Relay",
+    difficulty: "expert",
     emptySlots: [6],
     scrambleMoves: 45,
     movesLimit: 40,
@@ -145,10 +154,11 @@ const LEVELS = [
       { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'straight', rot: 0 }, { type: 'corner', rot: 3 }
     ]
   },
-  // Level 10: Grand Prix Final (1 locked obstacle cross, 50 scramble moves)
+  // Level 10: Grand Prix Final (Grand Master - 1 locked cross, 50 scramble moves)
   {
     id: 10,
     name: "Grand Prix Final",
+    difficulty: "expert",
     emptySlots: [5],
     scrambleMoves: 50,
     movesLimit: 44,
@@ -165,7 +175,11 @@ class GameEngine {
   constructor() {
     this.currentLevelIndex = 0;
     this.moves = 0;
-    this.elapsedSeconds = 0;
+    this.roundSeconds = 0; // Master 30:00 Relayathon round timer
+    this.stageSeconds = 0; // Split timer for the active puzzle
+    this.totalRoundMoves = 0; // Cumulative moves across all levels
+    this.completedLevels = new Set(); // Set of solved level IDs
+    this.checkpoint30MinTriggered = false; // Flag for automatic 30:00 storage
     this.timerInterval = null;
     this.boardState = []; // 16 slots: { tileId, type, rot, locked }
     this.tileElements = {}; // tileId -> DOM Element
@@ -186,6 +200,7 @@ class GameEngine {
     this.boardEl = document.getElementById('puzzle-board');
     this.movesEl = document.getElementById('moves-count');
     this.timerEl = document.getElementById('timer-display');
+    this.stageTimerEl = document.getElementById('stage-timer-display');
     this.levelDisplayEl = document.getElementById('current-level-display');
     this.participantInput = document.getElementById('participant-name-input');
     
@@ -196,6 +211,10 @@ class GameEngine {
     this.helpModal = document.getElementById('help-modal');
     this.levelsModal = document.getElementById('levels-modal');
     this.savedTimesModal = document.getElementById('saved-times-modal');
+    this.checkpointModal = document.getElementById('checkpoint-modal');
+
+    this.victoryStageTime = document.getElementById('victory-stage-time');
+    this.victoryRoundTime = document.getElementById('victory-round-time');
     
     this.btnPlay = document.getElementById('btn-play-game');
     this.btnHowTo = document.getElementById('btn-how-to');
@@ -214,6 +233,10 @@ class GameEngine {
     this.btnCloseSavedTimes = document.getElementById('btn-close-saved-times');
     this.btnExportTimes = document.getElementById('btn-export-times');
     this.btnClearTimes = document.getElementById('btn-clear-times');
+    this.btnNewRound = document.getElementById('btn-new-round');
+
+    this.btnCheckpointNext = document.getElementById('btn-checkpoint-next');
+    this.btnCheckpointContinue = document.getElementById('btn-checkpoint-continue');
 
     this.logoBack = document.getElementById('logo-back');
 
@@ -236,12 +259,12 @@ class GameEngine {
   }
 
   setupEventListeners() {
-    // Start Game Action
+    // Start Game Action - initializes fresh 30:00 round timer
     this.btnPlay.addEventListener('click', () => {
       this.initAudio();
       this.startScreen.classList.remove('active');
       this.gameContainer.classList.remove('hidden');
-      this.loadLevel(this.currentLevelIndex);
+      this.loadLevel(this.currentLevelIndex, true); // true = reset round timer for new competition run
       window.gameAudio.playStart();
     });
 
@@ -257,12 +280,13 @@ class GameEngine {
       this.openModal(this.helpModal);
     });
 
-    // In-game HUD actions
+    // In-game HUD reset action - resets current puzzle board, but round timer continues!
     this.btnReset.addEventListener('click', () => {
       if (this.isLevelComplete) return;
       this.initAudio();
       window.gameAudio.playClick();
-      this.loadLevel(this.currentLevelIndex);
+      this.loadLevel(this.currentLevelIndex, false); // false = keep competition round timer running!
+      this.showToast('Stage reset. Round timer continues.');
     });
 
     this.btnMute.addEventListener('click', () => {
@@ -291,6 +315,26 @@ class GameEngine {
       this.openModal(this.savedTimesModal);
     });
 
+    // 30:00 Round Checkpoint actions
+    if (this.btnCheckpointNext) {
+      this.btnCheckpointNext.addEventListener('click', () => {
+        this.closeModal(this.checkpointModal);
+        if (this.currentLevelIndex < LEVELS.length - 1) {
+          this.currentLevelIndex++;
+          this.loadLevel(this.currentLevelIndex, false); // Timer continues running!
+        } else {
+          this.showToast('Already on the Grand Prix Final stage! Continuing stage...');
+        }
+      });
+    }
+
+    if (this.btnCheckpointContinue) {
+      this.btnCheckpointContinue.addEventListener('click', () => {
+        this.closeModal(this.checkpointModal);
+        this.showToast('Continuing current puzzle. Timer is running.');
+      });
+    }
+
     // Modal Close actions
     this.btnCloseHelp.addEventListener('click', () => { this.closeModal(this.helpModal); });
     this.btnDismissHelp.addEventListener('click', () => { this.closeModal(this.helpModal); });
@@ -311,12 +355,22 @@ class GameEngine {
       }
     });
 
-    // Victory actions
+    if (this.btnNewRound) {
+      this.btnNewRound.addEventListener('click', () => {
+        if (confirm('Start a fresh 30:00 competition round? This resets the master timer to 00:00.')) {
+          this.closeModal(this.savedTimesModal);
+          this.loadLevel(0, true); // true = reset round timer to 00:00
+          this.showToast('Fresh 30:00 Relayathon round started!');
+        }
+      });
+    }
+
+    // Victory actions - Timer CONTINUES running across stages!
     this.btnNextLevel.addEventListener('click', () => {
       this.closeModal(this.victoryModal);
       if (this.currentLevelIndex < LEVELS.length - 1) {
         this.currentLevelIndex++;
-        this.loadLevel(this.currentLevelIndex);
+        this.loadLevel(this.currentLevelIndex, false); // Timer continues!
       } else {
         this.renderLevelsGrid();
         this.openModal(this.levelsModal);
@@ -325,7 +379,7 @@ class GameEngine {
 
     this.btnReplay.addEventListener('click', () => {
       this.closeModal(this.victoryModal);
-      this.loadLevel(this.currentLevelIndex);
+      this.loadLevel(this.currentLevelIndex, false); // Timer continues!
     });
 
     this.btnVictoryViewTimes.addEventListener('click', () => {
@@ -335,7 +389,8 @@ class GameEngine {
     });
 
     // Close modals on clicking background overlay
-    [this.helpModal, this.levelsModal, this.savedTimesModal].forEach(modal => {
+    [this.helpModal, this.levelsModal, this.savedTimesModal, this.checkpointModal].forEach(modal => {
+      if (!modal) return;
       modal.addEventListener('click', (e) => {
         if (e.target === modal) this.closeModal(modal);
       });
@@ -351,25 +406,39 @@ class GameEngine {
 
       const empties = this.getEmptySlotIndices();
       if (empties.length === 0) return;
-      const targetEmpty = empties[0];
-      const er = Math.floor(targetEmpty / 4);
-      const ec = targetEmpty % 4;
 
       let slideCandidate = null;
 
-      // Sliding into empty:
-      // Key UP (or W): slide the tile BELOW the empty space UP into it
-      if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-        if (er < 3) slideCandidate = targetEmpty + 4;
-      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-        // Key DOWN (or S): slide the tile ABOVE the empty space DOWN into it
-        if (er > 0) slideCandidate = targetEmpty - 4;
-      } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-        // Key LEFT (or A): slide the tile to the RIGHT of empty space LEFT into it
-        if (ec < 3) slideCandidate = targetEmpty + 1;
-      } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-        // Key RIGHT (or D): slide the tile to the LEFT of empty space RIGHT into it
-        if (ec > 0) slideCandidate = targetEmpty - 1;
+      // Check all available empty slots (handles boards with 2 empty spaces like Levels 1 & 2)
+      for (const targetEmpty of empties) {
+        const er = Math.floor(targetEmpty / 4);
+        const ec = targetEmpty % 4;
+
+        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+          // Slide tile below targetEmpty UP into it
+          if (er < 3 && this.boardState[targetEmpty + 4] && !this.boardState[targetEmpty + 4].locked && this.boardState[targetEmpty + 4].type !== 'empty') {
+            slideCandidate = targetEmpty + 4;
+            break;
+          }
+        } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+          // Slide tile above targetEmpty DOWN into it
+          if (er > 0 && this.boardState[targetEmpty - 4] && !this.boardState[targetEmpty - 4].locked && this.boardState[targetEmpty - 4].type !== 'empty') {
+            slideCandidate = targetEmpty - 4;
+            break;
+          }
+        } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          // Slide tile to the right of targetEmpty LEFT into it
+          if (ec < 3 && this.boardState[targetEmpty + 1] && !this.boardState[targetEmpty + 1].locked && this.boardState[targetEmpty + 1].type !== 'empty') {
+            slideCandidate = targetEmpty + 1;
+            break;
+          }
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          // Slide tile to the left of targetEmpty RIGHT into it
+          if (ec > 0 && this.boardState[targetEmpty - 1] && !this.boardState[targetEmpty - 1].locked && this.boardState[targetEmpty - 1].type !== 'empty') {
+            slideCandidate = targetEmpty - 1;
+            break;
+          }
+        }
       }
 
       if (slideCandidate !== null) {
@@ -398,11 +467,11 @@ class GameEngine {
   }
 
   openModal(modal) {
-    modal.classList.add('active');
+    if (modal) modal.classList.add('active');
   }
 
   closeModal(modal) {
-    modal.classList.remove('active');
+    if (modal) modal.classList.remove('active');
     if (this.audioInitiated) window.gameAudio.playClick();
   }
 
@@ -416,17 +485,26 @@ class GameEngine {
     return res;
   }
 
-  loadLevel(levelIndex) {
+  loadLevel(levelIndex, resetRound = false) {
     this.currentLevelIndex = levelIndex;
     const levelData = LEVELS[levelIndex];
     
     // Reset stage variables
     this.moves = 0;
-    this.elapsedSeconds = 0;
+    this.stageSeconds = 0;
     this.isLevelComplete = false;
     this.movesEl.textContent = '0';
-    this.timerEl.textContent = '00:00';
+    if (this.stageTimerEl) this.stageTimerEl.textContent = '00:00';
     this.levelDisplayEl.textContent = String(levelData.id).padStart(2, '0');
+
+    if (resetRound) {
+      this.roundSeconds = 0;
+      this.totalRoundMoves = 0;
+      this.completedLevels.clear();
+      this.checkpoint30MinTriggered = false;
+      this.timerEl.textContent = '00:00';
+      this.timerEl.classList.remove('overtime');
+    }
     
     // 1. Construct initial solved state with unique tile IDs
     const baseTiles = levelData.tiles.map((t, idx) => ({
@@ -437,12 +515,16 @@ class GameEngine {
     }));
 
     // 2. Scramble using valid slide moves to guarantee 100% mathematical solvability
-    this.boardState = this.scramblePuzzle(baseTiles, levelData.scrambleMoves);
+    // and verify the scrambled board is NOT already lit upon start
+    let scrambleAttempts = 0;
+    do {
+      this.boardState = this.scramblePuzzle(baseTiles, levelData.scrambleMoves + scrambleAttempts * 2);
+      scrambleAttempts++;
+    } while (this.checkIfBoardSolved(this.boardState) && scrambleAttempts < 10);
 
     // 3. Render Board DOM
     this.renderBoard();
     this.startTimer();
-    this.solveCircuit();
   }
 
   // Scramble puzzle via valid sliding moves (random walk from empty slot)
@@ -968,12 +1050,14 @@ class GameEngine {
       
       window.gameAudio.startHum();
       
-      // Stop and Save timer IMMEDIATELY as requested!
+      // Save completion time immediately without stopping the 30:00 competition timer!
       if (!this.isLevelComplete) {
         this.isLevelComplete = true;
-        this.stopTimer();
+        this.completedLevels.add(LEVELS[this.currentLevelIndex].id);
+        this.totalRoundMoves += this.moves;
+
         this.saveCompletionTime();
-        setTimeout(() => this.triggerVictory(), 1800);
+        setTimeout(() => this.triggerVictory(), 1600);
       }
     } else {
       window.gameAudio.stopHum();
@@ -995,17 +1079,22 @@ class GameEngine {
   // Save completion time immediately to localStorage for the relayathon records
   saveCompletionTime() {
     const levelData = LEVELS[this.currentLevelIndex];
-    const timeFormatted = this.formatTime(this.elapsedSeconds);
+    const stageTimeFormatted = this.formatTime(this.stageSeconds);
+    const roundTimeFormatted = this.formatTime(this.roundSeconds);
     const now = new Date();
     
     const record = {
       id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type: 'level_complete',
       participant: this.participantName,
       levelId: levelData.id,
       levelName: levelData.name,
-      timeFormatted: timeFormatted,
-      timeSeconds: this.elapsedSeconds,
+      timeFormatted: stageTimeFormatted, // Stage split time
+      timeSeconds: this.stageSeconds,
+      roundTimeFormatted: roundTimeFormatted, // Cumulative round time
+      roundTimeSeconds: this.roundSeconds,
       moves: this.moves,
+      totalRoundMoves: this.totalRoundMoves,
       timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       dateString: now.toLocaleDateString([], { month: 'short', day: 'numeric' })
     };
@@ -1031,7 +1120,7 @@ class GameEngine {
       }
     }
 
-    console.log(`[Relayathon Record Saved] ${this.participantName} | Level ${levelData.id} | Time: ${timeFormatted}`);
+    console.log(`[Relayathon Record Saved] ${this.participantName} | Level ${levelData.id} | Stage: ${stageTimeFormatted} | Round: ${roundTimeFormatted}`);
   }
 
   updateTerminals(posReachable, negReachable, energizedTiles, shortTiles) {
@@ -1167,7 +1256,12 @@ class GameEngine {
     const stars = this.calculateStars();
 
     // Populate victory screen stats
-    document.getElementById('victory-time').textContent = this.formatTime(this.elapsedSeconds);
+    if (this.victoryStageTime) {
+      this.victoryStageTime.textContent = this.formatTime(this.stageSeconds);
+    }
+    if (this.victoryRoundTime) {
+      this.victoryRoundTime.textContent = `${this.formatTime(this.roundSeconds)} / 30:00`;
+    }
     document.getElementById('victory-moves').textContent = this.moves;
     
     // Render stars
@@ -1200,13 +1294,27 @@ class GameEngine {
     return 1;
   }
 
-  // Timer functions
+  // Master Timer functions - 00:00 to 30:00 and continuous competition clock
   startTimer() {
-    this.stopTimer();
-    this.elapsedSeconds = 0;
+    if (this.timerInterval) return; // Already running continuously
     this.timerInterval = setInterval(() => {
-      this.elapsedSeconds++;
-      this.timerEl.textContent = this.formatTime(this.elapsedSeconds);
+      this.roundSeconds++;
+      this.stageSeconds++;
+      
+      this.timerEl.textContent = this.formatTime(this.roundSeconds);
+      if (this.stageTimerEl) {
+        this.stageTimerEl.textContent = this.formatTime(this.stageSeconds);
+      }
+
+      if (this.roundSeconds >= 1800) {
+        this.timerEl.classList.add('overtime');
+      }
+
+      // Automatically store round details when timer hits exactly 30:00 (1800 seconds)
+      if (this.roundSeconds === 1800 && !this.checkpoint30MinTriggered) {
+        this.checkpoint30MinTriggered = true;
+        this.trigger30MinCheckpoint();
+      }
     }, 1000);
   }
 
@@ -1217,13 +1325,113 @@ class GameEngine {
     }
   }
 
+  // Automatic 30:00 milestone handler
+  trigger30MinCheckpoint() {
+    if (window.gameAudio && window.gameAudio.playCheckpoint) {
+      window.gameAudio.playCheckpoint();
+    }
+
+    const levelData = LEVELS[this.currentLevelIndex];
+    const now = new Date();
+    const completedArr = Array.from(this.completedLevels).sort((a,b) => a - b);
+
+    const record = {
+      id: `checkpoint-30m-${Date.now()}`,
+      type: '30min_checkpoint',
+      participant: this.participantName,
+      levelId: levelData.id,
+      levelName: levelData.name,
+      timeFormatted: this.formatTime(this.stageSeconds), // stage split at 30:00
+      timeSeconds: this.stageSeconds,
+      roundTimeFormatted: '30:00',
+      roundTimeSeconds: 1800,
+      moves: this.moves,
+      totalRoundMoves: this.totalRoundMoves + this.moves,
+      completedCount: completedArr.length,
+      timeString: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      dateString: now.toLocaleDateString([], { month: 'short', day: 'numeric' })
+    };
+
+    // Prepend to savedTimes and commit immediately
+    this.savedTimes.unshift(record);
+    localStorage.setItem('voltloop_saved_times', JSON.stringify(this.savedTimes));
+
+    // Populate Checkpoint Modal
+    const runnerEl = document.getElementById('checkpoint-runner');
+    const solvedCountEl = document.getElementById('checkpoint-solved-count');
+    const stageEl = document.getElementById('checkpoint-current-stage');
+    const movesEl = document.getElementById('checkpoint-total-moves');
+
+    if (runnerEl) runnerEl.textContent = this.participantName;
+    if (solvedCountEl) solvedCountEl.textContent = `${completedArr.length} / 10`;
+    if (stageEl) stageEl.textContent = `Level ${levelData.id} (${levelData.name})`;
+    if (movesEl) movesEl.textContent = this.totalRoundMoves + this.moves;
+
+    this.openModal(this.checkpointModal);
+    this.showToast('⏱ 30:00 REACHED: Round details automatically stored to Relayathon Log!');
+  }
+
+  checkIfBoardSolved(boardState) {
+    const graph = {};
+    for (let i = -4; i <= 15; i++) graph[i] = [];
+
+    for (let i = 0; i < 16; i++) {
+      const tile = boardState[i];
+      if (!tile || tile.type === 'empty') continue;
+      const r = Math.floor(i / 4);
+      const c = i % 4;
+      const ports = this.rotateMask(BASE_MASKS[tile.type], tile.rot);
+
+      if ((ports & MASK_TOP) && r > 0) {
+        const j = i - 4;
+        const jP = this.rotateMask(BASE_MASKS[boardState[j].type], boardState[j].rot);
+        if (jP & MASK_BOTTOM) graph[i].push(j);
+      }
+      if ((ports & MASK_BOTTOM) && r < 3) {
+        const j = i + 4;
+        const jP = this.rotateMask(BASE_MASKS[boardState[j].type], boardState[j].rot);
+        if (jP & MASK_TOP) graph[i].push(j);
+      }
+      if (ports & MASK_LEFT) {
+        if (c > 0) {
+          const j = i - 1;
+          const jP = this.rotateMask(BASE_MASKS[boardState[j].type], boardState[j].rot);
+          if (jP & MASK_RIGHT) graph[i].push(j);
+        } else {
+          if (r === 0) { graph[i].push(-1); graph[-1].push(i); }
+          else if (r === 3) { graph[i].push(-2); graph[-2].push(i); }
+        }
+      }
+      if (ports & MASK_RIGHT) {
+        if (c < 3) {
+          const j = i + 1;
+          const jP = this.rotateMask(BASE_MASKS[boardState[j].type], boardState[j].rot);
+          if (jP & MASK_LEFT) graph[i].push(j);
+        } else {
+          if (r === 1) { graph[i].push(-3); graph[-3].push(i); }
+          else if (r === 2) { graph[i].push(-4); graph[-4].push(i); }
+        }
+      }
+    }
+
+    const shortCircuitNodes = this.findPathNodes(graph, -1, -2);
+    if (shortCircuitNodes.size > 0) return false;
+
+    const bIn = this.findPathNodes(graph, -1, -3);
+    const bOut = this.findPathNodes(graph, -4, -2);
+    const bInRev = this.findPathNodes(graph, -1, -4);
+    const bOutRev = this.findPathNodes(graph, -3, -2);
+
+    return (bIn.size > 0 && bOut.size > 0) || (bInRev.size > 0 && bOutRev.size > 0);
+  }
+
   formatTime(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
 
-  // Render Saved Times Modal
+  // Render Saved Times Modal with Stage and Round split times
   renderSavedTimesTable() {
     const tbody = document.getElementById('saved-times-tbody');
     const emptyNotice = document.getElementById('no-saved-times-msg');
@@ -1243,19 +1451,32 @@ class GameEngine {
 
     emptyNotice.classList.add('hidden');
 
-    let sumSeconds = 0;
-    let minSeconds = Infinity;
+    let minStageSeconds = Infinity;
 
     this.savedTimes.forEach((rec, idx) => {
-      sumSeconds += rec.timeSeconds;
-      if (rec.timeSeconds < minSeconds) minSeconds = rec.timeSeconds;
+      if (rec.timeSeconds && rec.timeSeconds < minStageSeconds && rec.type !== '30min_checkpoint') {
+        minStageSeconds = rec.timeSeconds;
+      }
+
+      const isCheckpoint = rec.type === '30min_checkpoint';
+      const typeBadge = isCheckpoint 
+        ? `<span class="cyber-chip orange">30:00 MILESTONE</span>`
+        : `<span class="cyber-chip cyan">STAGE CLEAR</span>`;
+
+      const stageDisplay = isCheckpoint
+        ? `L${rec.levelId} <span style="color:var(--accent-orange); font-size:0.75rem;">(${rec.completedCount || 0}/10 Done)</span>`
+        : `Level ${rec.levelId} <span style="color:var(--text-muted); font-size:0.75rem;">(${this.escapeHTML(rec.levelName)})</span>`;
+
+      const roundTimeDisplay = rec.roundTimeFormatted || rec.timeFormatted || '--:--';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${idx + 1}</td>
+        <td>${typeBadge}</td>
         <td class="participant-cell">${this.escapeHTML(rec.participant || 'Runner')}</td>
-        <td>Level ${rec.levelId} <span style="color:var(--text-muted); font-size:0.75rem;">(${this.escapeHTML(rec.levelName)})</span></td>
-        <td class="time-cell">${rec.timeFormatted}</td>
+        <td>${stageDisplay}</td>
+        <td class="time-cell cyan">${rec.timeFormatted}</td>
+        <td class="time-cell orange">${roundTimeDisplay}</td>
         <td>${rec.moves}</td>
         <td>${rec.dateString} ${rec.timeString}</td>
         <td><button class="del-btn" title="Delete record" data-id="${rec.id}">&times;</button></td>
@@ -1269,8 +1490,8 @@ class GameEngine {
     });
 
     totalRunsEl.textContent = this.savedTimes.length;
-    totalTimeEl.textContent = this.formatTime(sumSeconds);
-    bestStageEl.textContent = minSeconds !== Infinity ? this.formatTime(minSeconds) : '--:--';
+    totalTimeEl.textContent = this.formatTime(this.roundSeconds);
+    bestStageEl.textContent = minStageSeconds !== Infinity ? this.formatTime(minStageSeconds) : '--:--';
   }
 
   deleteSavedRecord(recordId) {
@@ -1285,9 +1506,12 @@ class GameEngine {
       return;
     }
 
-    let csvContent = "Rank,Participant,Level,Level Name,Time (mm:ss),Time (Seconds),Moves,Date,Time\n";
+    let csvContent = "Rank,Type,Participant,Level,Level Name,Stage Time (mm:ss),Stage Time (Seconds),Round Time (mm:ss),Round Time (Seconds),Moves,Date,Time\n";
     this.savedTimes.forEach((r, idx) => {
-      csvContent += `${idx + 1},"${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},${r.moves},"${r.dateString}","${r.timeString}"\n`;
+      const type = r.type === '30min_checkpoint' ? '30Min Checkpoint' : 'Stage Clear';
+      const roundSec = r.roundTimeSeconds || r.timeSeconds || 0;
+      const roundFmt = r.roundTimeFormatted || r.timeFormatted || '';
+      csvContent += `${idx + 1},"${type}","${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},"${roundFmt}",${roundSec},${r.moves},"${r.dateString}","${r.timeString}"\n`;
     });
 
     navigator.clipboard.writeText(csvContent).then(() => {
@@ -1327,6 +1551,11 @@ class GameEngine {
       const isUnlocked = this.unlockedLevels.includes(idx);
       card.className = `level-card ${isUnlocked ? 'unlocked' : 'locked'}`;
 
+      const diffBadge = document.createElement('span');
+      diffBadge.className = `difficulty-badge ${level.difficulty || 'easy'}`;
+      diffBadge.textContent = (level.difficulty || 'easy').toUpperCase();
+      card.appendChild(diffBadge);
+
       const numEl = document.createElement('span');
       numEl.className = 'num';
       numEl.textContent = idx + 1;
@@ -1341,7 +1570,7 @@ class GameEngine {
 
         card.addEventListener('click', () => {
           this.closeModal(this.levelsModal);
-          this.loadLevel(idx);
+          this.loadLevel(idx, false); // false = keep timer running!
         });
       } else {
         const starsEl = document.createElement('span');

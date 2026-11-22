@@ -71,13 +71,20 @@
       </div>
       
       <div class="hud-center">
+        <div class="hud-stat" title="30-Minute Relayathon Competition Timer">
+          <span class="label">ROUND TIME</span>
+          <div class="timer-wrapper">
+            <span class="value" id="timer-display">00:00</span>
+            <span class="timer-target">/ 30:00</span>
+          </div>
+        </div>
+        <div class="hud-stat" title="Time spent on current circuit">
+          <span class="label">STAGE TIME</span>
+          <span class="value cyan" id="stage-timer-display">00:00</span>
+        </div>
         <div class="hud-stat">
           <span class="label">MOVES</span>
           <span class="value" id="moves-count">0</span>
-        </div>
-        <div class="hud-stat">
-          <span class="label">TIME</span>
-          <span class="value" id="timer-display">00:00</span>
         </div>
       </div>
 
@@ -240,6 +247,54 @@
     </div>
   </div>
 
+  <!-- 30:00 Round Checkpoint Milestone Modal -->
+  <div id="checkpoint-modal" class="modal-overlay">
+    <div class="modal-content glass panel-medium text-center checkpoint-panel">
+      <div class="checkpoint-header">
+        <div class="checkpoint-icon-badge pulse-orange">
+          <svg viewBox="0 0 24 24" width="44" height="44" fill="var(--accent-orange)">
+            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+          </svg>
+        </div>
+        <h2 class="checkpoint-title">30:00 ROUND TIME REACHED</h2>
+        <div class="checkpoint-saved-badge">
+          <span class="badge-icon">✓</span>
+          <span class="badge-text">ROUND DETAILS AUTOMATICALLY STORED</span>
+        </div>
+      </div>
+
+      <div class="checkpoint-summary-card">
+        <div class="checkpoint-stat-row">
+          <span class="cp-label">RUNNER / TEAM</span>
+          <span class="cp-value" id="checkpoint-runner">Runner 1</span>
+        </div>
+        <div class="checkpoint-stat-row">
+          <span class="cp-label">COMPLETED PUZZLES</span>
+          <span class="cp-value cyan" id="checkpoint-solved-count">0 / 10</span>
+        </div>
+        <div class="checkpoint-stat-row">
+          <span class="cp-label">CURRENT PUZZLE</span>
+          <span class="cp-value" id="checkpoint-current-stage">Level 01</span>
+        </div>
+        <div class="checkpoint-stat-row">
+          <span class="cp-label">TOTAL ROUND MOVES</span>
+          <span class="cp-value" id="checkpoint-total-moves">0</span>
+        </div>
+      </div>
+
+      <p class="checkpoint-prompt">Choose an action to proceed. The timer will <strong>continue running</strong>:</p>
+
+      <div class="checkpoint-actions">
+        <button id="btn-checkpoint-next" class="btn btn-primary btn-lg btn-full">
+          GO TO NEXT ROUND / LEVEL
+        </button>
+        <button id="btn-checkpoint-continue" class="btn btn-secondary btn-full">
+          CONTINUE CURRENT PUZZLE
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Saved Times / Relayathon Leaderboard Modal -->
   <div id="saved-times-modal" class="modal-overlay">
     <div class="modal-content glass panel-large">
@@ -273,9 +328,11 @@
           <thead>
             <tr>
               <th>#</th>
+              <th>TYPE</th>
               <th>PARTICIPANT</th>
-              <th>LEVEL</th>
-              <th>TIME</th>
+              <th>STAGE</th>
+              <th>STAGE TIME</th>
+              <th>ROUND TIME</th>
               <th>MOVES</th>
               <th>SAVED AT</th>
               <th></th>
@@ -291,12 +348,17 @@
       </div>
 
       <div class="saved-times-actions">
-        <button id="btn-export-times" class="btn btn-secondary">
-          <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 6px;">
-            <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
-          </svg>
-          COPY / EXPORT TIMES
-        </button>
+        <div class="actions-left">
+          <button id="btn-new-round" class="btn btn-primary" title="Start a fresh 30-minute competition timer">
+            START NEW 30:00 ROUND
+          </button>
+          <button id="btn-export-times" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 6px;">
+              <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"/>
+            </svg>
+            COPY / EXPORT TIMES
+          </button>
+        </div>
         <button id="btn-clear-times" class="btn btn-danger-ghost">RESET RECORDS</button>
       </div>
     </div>
@@ -371,8 +433,12 @@
 
       <div class="victory-stats">
         <div class="victory-stat-item">
-          <span class="victory-stat-label">RECORDED TIME</span>
-          <span class="victory-stat-val cyan" id="victory-time">00:12</span>
+          <span class="victory-stat-label">STAGE TIME</span>
+          <span class="victory-stat-val cyan" id="victory-stage-time">00:12</span>
+        </div>
+        <div class="victory-stat-item">
+          <span class="victory-stat-label">ROUND TIME</span>
+          <span class="victory-stat-val orange" id="victory-round-time">05:22 / 30:00</span>
         </div>
         <div class="victory-stat-item">
           <span class="victory-stat-label">MOVES MADE</span>

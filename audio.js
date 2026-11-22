@@ -139,6 +139,35 @@ class AudioSynth {
     });
   }
 
+  playCheckpoint() {
+    if (this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const now = this.ctx.currentTime;
+    // Sci-fi tri-tone notification (440Hz -> 660Hz -> 880Hz)
+    const tones = [440, 659.25, 880];
+    tones.forEach((freq, idx) => {
+      const time = now + idx * 0.12;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, time);
+
+      gain.gain.setValueAtTime(0.0, time);
+      gain.gain.linearRampToValueAtTime(0.15, time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(time);
+      osc.stop(time + 0.4);
+    });
+  }
+
   startHum() {
     if (this.muted) return;
     this.init();
