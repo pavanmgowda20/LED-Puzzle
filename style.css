@@ -1,8 +1,8 @@
 /* VOLTLOOP CSS Design System */
 
 :root {
-  --bg-primary: #0a0915;
-  --bg-secondary: #110e2c;
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
   --accent-cyan: #00f2fe;
   --accent-blue: #4facfe;
   --accent-green: #39ff14;
@@ -10,7 +10,7 @@
   --accent-yellow: #ffd000;
   --text-primary: #e5e5f0;
   --text-muted: #8c8ba0;
-  --glass-bg: rgba(20, 18, 43, 0.55);
+  --glass-bg: rgba(10, 10, 14, 0.88);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-glow: rgba(0, 242, 254, 0.15);
   --tile-size: 92px;
@@ -32,12 +32,13 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  background-color: #000000;
 }
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-primary);
-  background-image: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background-color: #000000;
+  background-image: none;
   color: var(--text-primary);
   display: flex;
   justify-content: center;
@@ -53,8 +54,8 @@ body {
   right: 0;
   bottom: 0;
   background-image: 
-    linear-gradient(rgba(18, 16, 35, 0.4) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(18, 16, 35, 0.4) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: center;
   z-index: 0;
@@ -62,28 +63,7 @@ body {
 }
 
 .glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.12;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.orb-1 {
-  width: 400px;
-  height: 400px;
-  background-color: var(--accent-cyan);
-  top: -100px;
-  left: -100px;
-}
-
-.orb-2 {
-  width: 500px;
-  height: 500px;
-  background-color: var(--accent-orange);
-  bottom: -150px;
-  right: -100px;
+  display: none;
 }
 
 /* Glassmorphism Common Class */
@@ -432,8 +412,8 @@ body {
   flex-direction: column;
   padding: 8px;
   position: relative;
-  background: #151329;
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: #0e0e13;
+  border: 2px solid rgba(255, 255, 255, 0.12);
 }
 
 .battery-cap {
@@ -520,9 +500,9 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #25233c;
-  border: 2px solid #5a577d;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+  background: #14141c;
+  border: 2px solid #383848;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
   transition: all 0.3s;
 }
 
@@ -556,7 +536,7 @@ body {
 }
 
 .wire-svg .bg-line {
-  stroke: #25233c;
+  stroke: #181824;
   stroke-width: 6;
   fill: none;
   stroke-linecap: round;
@@ -652,27 +632,27 @@ body {
 .board-neon-outline {
   padding: 10px;
   border-radius: 20px;
-  background: #090812;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #08080b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.6),
+    0 10px 40px rgba(0, 0, 0, 0.9),
     inset 0 0 10px rgba(0, 242, 254, 0.05);
   transition: box-shadow 0.4s;
 }
 
 .board-neon-outline.energized {
   box-shadow: 
-    0 10px 50px rgba(0, 242, 254, 0.15),
-    0 0 20px rgba(0, 242, 254, 0.1),
+    0 10px 50px rgba(0, 242, 254, 0.2),
+    0 0 20px rgba(0, 242, 254, 0.15),
     inset 0 0 15px rgba(0, 242, 254, 0.1);
-  border-color: rgba(0, 242, 254, 0.25);
+  border-color: rgba(0, 242, 254, 0.35);
 }
 
 .puzzle-board {
   position: relative;
   width: calc(4 * var(--tile-size) + 3 * var(--board-gap) + 16px);
   height: calc(4 * var(--tile-size) + 3 * var(--board-gap) + 16px);
-  background: rgba(14, 12, 28, 0.5);
+  background: #050507;
   padding: 8px;
   border-radius: 12px;
   overflow: hidden;
@@ -693,10 +673,10 @@ body {
 .board-socket {
   width: var(--tile-size);
   height: var(--tile-size);
-  background: rgba(10, 8, 20, 0.7);
-  border: 1px dashed rgba(255, 255, 255, 0.05);
+  background: #0c0c10;
+  border: 1px dashed rgba(255, 255, 255, 0.06);
   border-radius: 10px;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -708,7 +688,7 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(0, 242, 254, 0.12);
+  background: rgba(0, 242, 254, 0.15);
 }
 
 /* Movable tile pieces */
@@ -718,12 +698,12 @@ body {
   left: 8px;
   width: var(--tile-size);
   height: var(--tile-size);
-  background: #16142c;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #141418;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   box-shadow: 
-    0 4px 10px rgba(0, 0, 0, 0.35),
-    inset 0 0 8px rgba(0, 0, 0, 0.4);
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 0 8px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   user-select: none;
   touch-action: none;
@@ -734,11 +714,11 @@ body {
 }
 
 .tile-cell:hover, .tile-piece:hover {
-  background: #1f1b3d;
-  border-color: rgba(0, 242, 254, 0.3);
+  background: #1a1a22;
+  border-color: rgba(0, 242, 254, 0.35);
   box-shadow: 
-    0 6px 16px rgba(0, 242, 254, 0.15),
-    inset 0 0 8px rgba(0, 0, 0, 0.3);
+    0 6px 16px rgba(0, 242, 254, 0.2),
+    inset 0 0 8px rgba(0, 0, 0, 0.4);
   z-index: 4;
 }
 
@@ -802,7 +782,7 @@ body {
 
 /* Wire layout colors inside SVGs */
 .wire-core {
-  stroke: #25223a;
+  stroke: #22222c;
   stroke-width: 10;
   fill: none;
   stroke-linecap: round;
@@ -810,7 +790,7 @@ body {
 }
 
 .tile-cell:hover .wire-core {
-  stroke: #2e2a4a;
+  stroke: #323240;
 }
 
 .wire-glow-line {
