@@ -104,15 +104,9 @@
           </svg>
           <span class="btn-skip-label">SKIP (+3m)</span>
         </button>
-        <button id="btn-sync-settings" class="hud-btn" title="Cloud Sync & Live Projection Webhook">
+        <button id="btn-reset" class="hud-btn" title="Reset Current Board Scramble">
           <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M19.35,10.04C18.67,6.59 15.64,4 12,4C9.11,4 6.6,5.64 5.35,8.04C2.34,8.36 0,10.91 0,14A6,6 0 0,0 6,20H19A5,5 0 0,0 24,15C24,12.36 21.95,10.22 19.35,10.04M19,18H6A4,4 0 0,1 2,14C2,11.95 3.53,10.24 5.56,10.03L6.63,9.92L7.13,8.97C8.08,7.14 9.94,6 12,6C14.65,6 16.85,7.94 17.24,10.5L17.57,12.63L19.72,12.75C20.97,12.82 22,13.88 22,15A3,3 0 0,1 19,18Z"/>
-          </svg>
-          <span class="sync-status-dot" id="sync-dot" title="Cloud sync status"></span>
-        </button>
-        <button id="btn-saved-times" class="hud-btn" title="Saved Times & Leaderboard">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+            <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
           </svg>
         </button>
         <button id="btn-mute" class="hud-btn" title="Toggle Sound">
@@ -121,16 +115,6 @@
           </svg>
           <svg class="icon-unmute hidden" viewBox="0 0 24 24" width="22" height="22">
             <path fill="currentColor" d="M3.27,1.44L2,2.72L5.28,6H3V12H7L12,17V12.72L16.28,17C15.62,17.5 14.85,17.86 14,18.06V20.12C15.4,19.9 16.69,19.23 17.74,18.46L20.28,21L21.56,19.72L3.27,1.44M12,4L9.91,6.09L12,8.18V4M14,3.23V5.29C14.93,5.57 15.79,6.03 16.5,6.67L15,8.17C14.71,7.96 14.37,7.8 14,7.71V9.71L19,14.71C19,13.82 19,12.91 19,12C19,7.72 16,4.14 14,3.23M16.5,12C16.5,12.28 16.46,12.55 16.39,12.81L14,10.42V7.97C15.5,8.71 16.5,10.23 16.5,12Z"/>
-          </svg>
-        </button>
-        <button id="btn-reset" class="hud-btn" title="Reset Level">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/>
-          </svg>
-        </button>
-        <button id="btn-levels" class="hud-btn" title="Select Level">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M4,6H20V8H4V6M4,11H20V13H4V11M4,16H20V18H4V16Z"/>
           </svg>
         </button>
         <button id="btn-help" class="hud-btn" title="Tutorial">
@@ -459,9 +443,7 @@
       </div>
 
       <div class="victory-actions">
-        <button id="btn-next-level" class="btn btn-success btn-lg">PROCEED TO NEXT TEST</button>
-        <button id="btn-victory-view-times" class="btn btn-secondary">VIEW SAVED TIMES</button>
-        <button id="btn-replay" class="btn btn-secondary">REPLAY STAGE</button>
+        <button id="btn-next-level" class="btn btn-success btn-lg btn-full">PROCEED TO NEXT TEST</button>
       </div>
     </div>
   </div>

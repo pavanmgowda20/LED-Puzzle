@@ -357,19 +357,23 @@ class GameEngine {
       this.openModal(this.helpModal);
     });
 
-    this.btnLevels.addEventListener('click', () => {
-      this.initAudio();
-      window.gameAudio.playClick();
-      this.renderLevelsGrid();
-      this.openModal(this.levelsModal);
-    });
+    if (this.btnLevels) {
+      this.btnLevels.addEventListener('click', () => {
+        this.initAudio();
+        window.gameAudio.playClick();
+        this.renderLevelsGrid();
+        this.openModal(this.levelsModal);
+      });
+    }
 
-    this.btnSavedTimes.addEventListener('click', () => {
-      this.initAudio();
-      window.gameAudio.playClick();
-      this.renderSavedTimesTable();
-      this.openModal(this.savedTimesModal);
-    });
+    if (this.btnSavedTimes) {
+      this.btnSavedTimes.addEventListener('click', () => {
+        this.initAudio();
+        window.gameAudio.playClick();
+        this.renderSavedTimesTable();
+        this.openModal(this.savedTimesModal);
+      });
+    }
 
     // 30:00 Round Checkpoint actions
     if (this.btnCheckpointNext) {
@@ -392,10 +396,10 @@ class GameEngine {
     }
 
     // Modal Close actions
-    this.btnCloseHelp.addEventListener('click', () => { this.closeModal(this.helpModal); });
-    this.btnDismissHelp.addEventListener('click', () => { this.closeModal(this.helpModal); });
-    this.btnCloseLevels.addEventListener('click', () => { this.closeModal(this.levelsModal); });
-    this.btnCloseSavedTimes.addEventListener('click', () => { this.closeModal(this.savedTimesModal); });
+    if (this.btnCloseHelp) this.btnCloseHelp.addEventListener('click', () => { this.closeModal(this.helpModal); });
+    if (this.btnDismissHelp) this.btnDismissHelp.addEventListener('click', () => { this.closeModal(this.helpModal); });
+    if (this.btnCloseLevels) this.btnCloseLevels.addEventListener('click', () => { this.closeModal(this.levelsModal); });
+    if (this.btnCloseSavedTimes) this.btnCloseSavedTimes.addEventListener('click', () => { this.closeModal(this.savedTimesModal); });
 
     // Saved times actions (Guarded for participant view safety)
     if (this.btnExportTimes) {
@@ -432,27 +436,33 @@ class GameEngine {
     }
 
     // Victory actions - Timer CONTINUES running across stages!
-    this.btnNextLevel.addEventListener('click', () => {
-      this.closeModal(this.victoryModal);
-      if (this.currentLevelIndex < LEVELS.length - 1) {
-        this.currentLevelIndex++;
+    if (this.btnNextLevel) {
+      this.btnNextLevel.addEventListener('click', () => {
+        this.closeModal(this.victoryModal);
+        if (this.currentLevelIndex < LEVELS.length - 1) {
+          this.currentLevelIndex++;
+          this.loadLevel(this.currentLevelIndex, false); // Timer continues!
+        } else {
+          this.renderLevelsGrid();
+          this.openModal(this.levelsModal);
+        }
+      });
+    }
+
+    if (this.btnReplay) {
+      this.btnReplay.addEventListener('click', () => {
+        this.closeModal(this.victoryModal);
         this.loadLevel(this.currentLevelIndex, false); // Timer continues!
-      } else {
-        this.renderLevelsGrid();
-        this.openModal(this.levelsModal);
-      }
-    });
+      });
+    }
 
-    this.btnReplay.addEventListener('click', () => {
-      this.closeModal(this.victoryModal);
-      this.loadLevel(this.currentLevelIndex, false); // Timer continues!
-    });
-
-    this.btnVictoryViewTimes.addEventListener('click', () => {
-      this.closeModal(this.victoryModal);
-      this.renderSavedTimesTable();
-      this.openModal(this.savedTimesModal);
-    });
+    if (this.btnVictoryViewTimes) {
+      this.btnVictoryViewTimes.addEventListener('click', () => {
+        this.closeModal(this.victoryModal);
+        this.renderSavedTimesTable();
+        this.openModal(this.savedTimesModal);
+      });
+    }
 
     // Emergency Skip Action (Improvement 4: Stuck Prevention)
     if (this.btnSkip) {
@@ -1848,8 +1858,25 @@ class GameEngine {
   // IMPROVEMENT 5: Anti-Cheat Keyboard Lock & SHA-256 Checksum Hash
   // ==========================================================================
   setupAntiCheat() {
-    // Intercept inspection hotkeys (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+U)
+    // Intercept inspection hotkeys while enabling secret Judge shortcuts
     window.addEventListener('keydown', (e) => {
+      // Secret Judge / Admin shortcuts (Invisible to participants)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'S' || e.key === 's')) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.populateSyncModalFields();
+        this.openModal(this.syncModal);
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.renderSavedTimesTable();
+        this.openModal(this.savedTimesModal);
+        return;
+      }
+
       const isF12 = e.key === 'F12' || e.keyCode === 123;
       const isDevToolsCombo = (e.ctrlKey || e.metaKey) && e.shiftKey && (
         e.key === 'I' || e.key === 'i' ||
