@@ -22,26 +22,10 @@
   <div id="start-screen" class="modal-overlay active">
     <div class="modal-content glass start-panel">
       <div class="brand-header">
-        <div class="brand-logo">
-          <svg viewBox="0 0 100 100" width="80" height="80">
-            <defs>
-              <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00f2fe" />
-                <stop offset="100%" stop-color="#4facfe" />
-              </linearGradient>
-              <filter id="logoGlow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-            <circle cx="50" cy="50" r="40" stroke="url(#logoGrad)" stroke-width="4" fill="none" opacity="0.3" />
-            <path d="M 50 15 A 35 35 0 0 1 85 50 L 70 50 A 20 20 0 0 0 50 30 Z" fill="url(#logoGrad)" filter="url(#logoGlow)" />
-            <path d="M 50 85 A 35 35 0 0 1 15 50 L 30 50 A 20 20 0 0 0 50 70 Z" fill="url(#logoGrad)" filter="url(#logoGlow)" />
-            <polygon points="50,35 65,52 53,52 50,65 35,48 47,48" fill="#fff" filter="url(#logoGlow)" />
-          </svg>
+        <div class="brand-logos-container">
+          <img src="/ivc-logo.png" alt="IVC - Innovators & Visionaries Club" class="brand-logo-ivc" />
+          <div class="brand-logos-divider"></div>
+          <img src="/relaython-logo-dark.png" alt="Relaython - A Relay-Style Hackathon" class="brand-logo-relaython" />
         </div>
         <h1 class="brand-title">LAP 1 <span>CIRCUIT PUZZLE</span></h1>
         <p class="brand-subtitle">RELAYATHON • CONNECT POWER TO GROUND</p>
@@ -68,7 +52,11 @@
     <!-- Header / HUD -->
     <header class="hud-header glass">
       <div class="hud-left">
-        <div class="logo-text" id="logo-back">LAP 1 <span>CIRCUIT PUZZLE</span></div>
+        <div class="hud-brand-container" id="logo-back" title="Return to Start Screen">
+          <img src="/ivc-logo.png" alt="IVC" class="hud-logo-ivc" />
+          <img src="/relaython-logo-dark.png" alt="Relaython" class="hud-logo-relaython" />
+          <div class="logo-text">LAP 1 <span>CIRCUIT PUZZLE</span></div>
+        </div>
         <div class="hud-stat">
           <span class="label">LEVEL</span>
           <span class="value" id="current-level-display">01</span>

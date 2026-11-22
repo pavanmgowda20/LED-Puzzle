@@ -206,13 +206,48 @@ body {
 }
 
 .brand-header {
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
-.brand-logo {
-  margin-bottom: 20px;
-  display: inline-block;
-  animation: logoPulse 4s ease-in-out infinite;
+.brand-logos-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.brand-logo-ivc {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 15px rgba(0, 242, 254, 0.25));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.brand-logo-ivc:hover {
+  transform: scale(1.06) rotate(4deg);
+  filter: drop-shadow(0 6px 20px rgba(0, 242, 254, 0.5));
+}
+
+.brand-logos-divider {
+  width: 1px;
+  height: 52px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.brand-logo-relaython {
+  height: 48px;
+  width: auto;
+  max-width: 190px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 15px rgba(255, 0, 50, 0.25));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.brand-logo-relaython:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 6px 20px rgba(255, 0, 50, 0.5));
 }
 
 .brand-title {
@@ -274,6 +309,38 @@ body {
   border-radius: 12px;
   border-color: rgba(255, 255, 255, 0.08);
   gap: 16px;
+}
+
+.hud-brand-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hud-logo-ivc {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.35));
+  transition: transform 0.2s ease;
+}
+
+.hud-logo-relaython {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 50, 50, 0.35));
+  transition: transform 0.2s ease;
+}
+
+.hud-brand-container:hover .hud-logo-ivc {
+  transform: rotate(15deg) scale(1.08);
+}
+
+.hud-brand-container:hover .hud-logo-relaython {
+  transform: scale(1.05);
 }
 
 .logo-text {
