@@ -397,10 +397,12 @@ class GameEngine {
     this.btnCloseLevels.addEventListener('click', () => { this.closeModal(this.levelsModal); });
     this.btnCloseSavedTimes.addEventListener('click', () => { this.closeModal(this.savedTimesModal); });
 
-    // Saved times actions
-    this.btnExportTimes.addEventListener('click', () => {
-      this.exportSavedTimes();
-    });
+    // Saved times actions (Guarded for participant view safety)
+    if (this.btnExportTimes) {
+      this.btnExportTimes.addEventListener('click', () => {
+        this.exportSavedTimes();
+      });
+    }
 
     if (this.btnDownloadCSV) {
       this.btnDownloadCSV.addEventListener('click', () => {
@@ -408,14 +410,16 @@ class GameEngine {
       });
     }
 
-    this.btnClearTimes.addEventListener('click', () => {
-      if (confirm('Clear all recorded Relayathon times?')) {
-        this.savedTimes = [];
-        localStorage.removeItem('voltloop_saved_times');
-        this.renderSavedTimesTable();
-        this.showToast('All recorded times cleared.');
-      }
-    });
+    if (this.btnClearTimes) {
+      this.btnClearTimes.addEventListener('click', () => {
+        if (confirm('Clear all recorded Relayathon times?')) {
+          this.savedTimes = [];
+          localStorage.removeItem('voltloop_saved_times');
+          this.renderSavedTimesTable();
+          this.showToast('All recorded times cleared.');
+        }
+      });
+    }
 
     if (this.btnNewRound) {
       this.btnNewRound.addEventListener('click', () => {
@@ -1654,7 +1658,6 @@ class GameEngine {
         <td>${rec.moves}</td>
         <td class="hash-cell">${hashDisplay}</td>
         <td>${rec.dateString} ${rec.timeString}</td>
-        <td><button class="del-btn" title="Delete record" data-id="${rec.id}">&times;</button></td>
       `;
 
       const hashChip = tr.querySelector('.cyber-chip.hash');
@@ -1669,10 +1672,6 @@ class GameEngine {
           }
         });
       }
-
-      tr.querySelector('.del-btn').addEventListener('click', () => {
-        this.deleteSavedRecord(rec.id);
-      });
 
       tbody.appendChild(tr);
     });
