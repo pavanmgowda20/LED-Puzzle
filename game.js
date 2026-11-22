@@ -17,6 +17,18 @@ const BASE_MASKS = {
   cross: MASK_TOP | MASK_RIGHT | MASK_BOTTOM | MASK_LEFT // 15
 };
 
+// Master deterministic competition seed ensuring all teams receive 100% identical puzzles
+const COMPETITION_SEED = 20261122;
+
+function createPRNG(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // 10 Curated and 100% Verified Solvable Levels with Sliding Scrambling (Graduated Difficulty)
 const LEVELS = [
   // Level 1: System Ignition (Easy - 2 empty slots, perimeter loop)
@@ -232,6 +244,7 @@ class GameEngine {
     this.btnCloseLevels = document.getElementById('btn-close-levels');
     this.btnCloseSavedTimes = document.getElementById('btn-close-saved-times');
     this.btnExportTimes = document.getElementById('btn-export-times');
+    this.btnDownloadCSV = document.getElementById('btn-download-csv');
     this.btnClearTimes = document.getElementById('btn-clear-times');
     this.btnNewRound = document.getElementById('btn-new-round');
 
@@ -345,6 +358,12 @@ class GameEngine {
     this.btnExportTimes.addEventListener('click', () => {
       this.exportSavedTimes();
     });
+
+    if (this.btnDownloadCSV) {
+      this.btnDownloadCSV.addEventListener('click', () => {
+        this.downloadSavedTimesCSV();
+      });
+    }
 
     this.btnClearTimes.addEventListener('click', () => {
       if (confirm('Clear all recorded Relayathon times?')) {
@@ -514,21 +533,19 @@ class GameEngine {
       locked: !!t.locked
     }));
 
-    // 2. Scramble using valid slide moves to guarantee 100% mathematical solvability
-    // and verify the scrambled board is NOT already lit upon start
-    let scrambleAttempts = 0;
-    do {
-      this.boardState = this.scramblePuzzle(baseTiles, levelData.scrambleMoves + scrambleAttempts * 2);
-      scrambleAttempts++;
-    } while (this.checkIfBoardSolved(this.boardState) && scrambleAttempts < 10);
+    // 2. Scramble using deterministic seeded random walk so ALL teams get 100% identical puzzles!
+    this.boardState = this.scramblePuzzle(baseTiles, levelData.scrambleMoves, levelData.id);
 
-    // 3. Render Board DOM
+    // 3. Render Board DOM & solve initial connectivity
     this.renderBoard();
     this.startTimer();
+    this.solveCircuit();
   }
 
-  // Scramble puzzle via valid sliding moves (random walk from empty slot)
-  scramblePuzzle(solvedTiles, numMoves) {
+  // Deterministic seeded puzzle scramble ensuring 100% identical starting layouts for all teams
+  scramblePuzzle(solvedTiles, numMoves, levelId = 1) {
+    const seed = COMPETITION_SEED + levelId * 997;
+    const rng = createPRNG(seed);
     const board = solvedTiles.map(t => ({ ...t }));
     let lastMoved = null;
 
@@ -540,7 +557,7 @@ class GameEngine {
       }
 
       if (empties.length === 0) break;
-      const emptySlot = empties[Math.floor(Math.random() * empties.length)];
+      const emptySlot = empties[Math.floor(rng() * empties.length)];
       const er = Math.floor(emptySlot / 4);
       const ec = emptySlot % 4;
 
@@ -562,7 +579,7 @@ class GameEngine {
 
       if (pool.length === 0) continue;
 
-      const chosenPos = pool[Math.floor(Math.random() * pool.length)];
+      const chosenPos = pool[Math.floor(rng() * pool.length)];
 
       // Swap chosen tile with empty slot
       const temp = board[chosenPos];
@@ -1519,6 +1536,33 @@ class GameEngine {
     }).catch(() => {
       this.showToast('Export created in memory.');
     });
+  }
+
+  downloadSavedTimesCSV() {
+    if (this.savedTimes.length === 0) {
+      this.showToast('No saved records to download.');
+      return;
+    }
+
+    let csvContent = "Rank,Type,Participant,Level,Level Name,Stage Time (mm:ss),Stage Time (Seconds),Round Time (mm:ss),Round Time (Seconds),Moves,Date,Time\n";
+    this.savedTimes.forEach((r, idx) => {
+      const type = r.type === '30min_checkpoint' ? '30Min Checkpoint' : 'Stage Clear';
+      const roundSec = r.roundTimeSeconds || r.timeSeconds || 0;
+      const roundFmt = r.roundTimeFormatted || r.timeFormatted || '';
+      csvContent += `${idx + 1},"${type}","${r.participant}",${r.levelId},"${r.levelName}",${r.timeFormatted},${r.timeSeconds},"${roundFmt}",${roundSec},${r.moves},"${r.dateString}","${r.timeString}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeRunner = (this.participantName || 'Runner').replace(/[^a-zA-Z0-9_-]/g, '_');
+    a.href = url;
+    a.download = `Relayathon_Scores_${safeRunner}_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.showToast('CSV scores file downloaded to your device!');
   }
 
   showToast(msg) {
